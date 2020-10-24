@@ -16,7 +16,7 @@ const App = (props) => {
         screenOptions={{
           headerShown: false,
         }}
-        initialRouteName="courses">
+        initialRouteName="home">
         <Screen name="home" component={HomeScreen} />
         <Screen name="login" component={LoginScreen} />
         <Screen name="signup" component={SignupScreen} />

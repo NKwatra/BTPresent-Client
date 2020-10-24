@@ -1,8 +1,27 @@
 import React from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import {StyleSheet, Image, Text, Dimensions} from 'react-native';
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-const HomeScreen = (props) => {
+const HomeScreen = ({navigation}) => {
+  const handleSwipe = (direction) => {
+    const {SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
+    switch (direction) {
+      case SWIPE_LEFT:
+        handleLeftSwipe();
+        break;
+      case SWIPE_RIGHT:
+        handleRightSwipe();
+        break;
+    }
+  };
+
+  const handleLeftSwipe = () =>
+    navigation.navigate('login', {accountType: 'TEACHER'});
+
+  const handleRightSwipe = () =>
+    navigation.navigate('login', {accountType: 'STUDENT'});
+
   return (
     <LinearGradient
       style={styles.linearGradient}
@@ -12,30 +31,34 @@ const HomeScreen = (props) => {
         source={require('../assets/images/homeImage.png')}
         style={styles.mainImage}
       />
-      <LinearGradient
-        style={styles.student}
-        colors={['rgba(250, 244, 236, 0)', '#FAF4EC']}
-        locations={[0.5, 1]}
-        start={{x: 0, y: 0}}
-        end={{x: 1, y: 0}}>
-        <Text style={styles.largeText}>STUDENT</Text>
-      </LinearGradient>
-      <LinearGradient
-        style={styles.teacher}
-        colors={['rgba(250, 244, 236, 0)', '#FAF4EC']}
-        locations={[0.5, 1]}
-        start={{x: 1, y: 0}}
-        end={{x: 0, y: 0}}>
-        <Text style={styles.largeText}>TEACHER</Text>
-      </LinearGradient>
-      <Image
-        source={require('../assets/images/right-arrow-double.png')}
-        style={styles.right}
-      />
-      <Image
-        source={require('../assets/images/left-arrow-double.png')}
-        style={styles.left}
-      />
+      <GestureRecognizer
+        style={styles.gesture}
+        onSwipe={(direction) => handleSwipe(direction)}>
+        <LinearGradient
+          style={styles.student}
+          colors={['rgba(250, 244, 236, 0)', '#FAF4EC']}
+          locations={[0.5, 1]}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 0}}>
+          <Text style={styles.largeText}>STUDENT</Text>
+        </LinearGradient>
+        <LinearGradient
+          style={styles.teacher}
+          colors={['rgba(250, 244, 236, 0)', '#FAF4EC']}
+          locations={[0.5, 1]}
+          start={{x: 1, y: 0}}
+          end={{x: 0, y: 0}}>
+          <Text style={styles.largeText}>TEACHER</Text>
+        </LinearGradient>
+        <Image
+          source={require('../assets/images/right-arrow-double.png')}
+          style={styles.right}
+        />
+        <Image
+          source={require('../assets/images/left-arrow-double.png')}
+          style={styles.left}
+        />
+      </GestureRecognizer>
     </LinearGradient>
   );
 };
@@ -87,6 +110,7 @@ const styles = StyleSheet.create({
     right: 128,
     bottom: Dimensions.get('window').height * 0.19 || 120,
   },
+  gesture: {flex: 1, position: 'relative'},
 });
 
 export default HomeScreen;

@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-const SignupScreen = (props) => {
+const SignupScreen = ({navigation, route}) => {
   const [state, updateState] = useState({
     Fname: '',
     Lname: '',
@@ -21,7 +21,30 @@ const SignupScreen = (props) => {
     enrollmentNo: '',
   });
 
-  const accountType = props.route.params || 'STUDENT';
+  const accountType = route.params.accountType || 'STUDENT';
+
+  const fieldsFilled = () => {
+    if (
+      !(
+        state.Fname.length > 0 &&
+        state.Lname.length > 0 &&
+        state.university.length > 0 &&
+        state.email.length > 0 &&
+        state.password.length > 0
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      accountType === 'STUDENT' &&
+      (state.altemail.length === 0 || state.enrollmentNo.length === 0)
+    ) {
+      return false;
+    }
+
+    return true;
+  };
 
   return (
     <LinearGradient
@@ -32,10 +55,12 @@ const SignupScreen = (props) => {
       locations={[0.4428, 1.4643]}
       style={styles.gradient}>
       <ScrollView>
-        <Image
-          source={require('../assets/images/back-arrow.png')}
-          style={styles.backArrow}
-        />
+        <TouchableOpacity onPress={navigation.goBack}>
+          <Image
+            source={require('../assets/images/back-arrow.png')}
+            style={styles.backArrow}
+          />
+        </TouchableOpacity>
         <Text style={styles.welcome}>Create Account</Text>
         <View style={[styles.margin, styles.marginTopLarge]}>
           <Text style={styles.label}>First Name</Text>
@@ -87,6 +112,7 @@ const SignupScreen = (props) => {
               })
             }
             style={styles.input}
+            textContentType="emailAddress"
           />
         </View>
         {accountType === 'STUDENT' ? (
@@ -102,6 +128,7 @@ const SignupScreen = (props) => {
                   })
                 }
                 style={styles.input}
+                textContentType="emailAddress"
               />
             </View>
             <View style={[styles.margin, styles.marginTopSmall]}>
@@ -130,9 +157,14 @@ const SignupScreen = (props) => {
               })
             }
             style={styles.input}
+            secureTextEntry
           />
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            if (fieldsFilled())
+              navigation.navigate('courses', {...state, accountType});
+          }}>
           <View style={styles.next}>
             <Image
               source={require('../assets/images/right-arrow.png')}
@@ -175,6 +207,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingVertical: 15,
     paddingHorizontal: 15,
+    fontSize: 14,
+    fontFamily: 'Montserrat-Medium',
+    color: '#FFFFFF',
   },
   margin: {
     marginHorizontal: 24,

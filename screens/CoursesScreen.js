@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-const CoursesScreen = (props) => {
+const CoursesScreen = ({navigation, route}) => {
   const [courses, updateCourses] = useState([
     {selected: false, name: 'Advanced Computer Networks', id: '1'},
     {selected: false, name: 'Software Testing', id: '2'},
@@ -19,16 +19,19 @@ const CoursesScreen = (props) => {
     {selected: false, name: 'Advanced Java', id: '5'},
     {selected: false, name: 'Data Mining', id: '6'},
   ]);
+
   return (
     <LinearGradient
       style={styles.linearGradient}
       colors={['rgba(234, 205, 163, 0.1)', 'rgba(214, 174, 123, 0.85)']}
       locations={[-0.1203, 1.0219]}>
       <View style={styles.header}>
-        <Image
-          source={require('../assets/images/back-arrow.png')}
-          style={styles.backArrow}
-        />
+        <TouchableOpacity onPress={navigation.goBack}>
+          <Image
+            source={require('../assets/images/back-arrow.png')}
+            style={styles.backArrow}
+          />
+        </TouchableOpacity>
         <Text style={styles.courseHeader}>Courses</Text>
       </View>
       <FlatList
@@ -44,7 +47,8 @@ const CoursesScreen = (props) => {
                 newCourses[index].selected = !newCourses[index].selected;
                 updateCourses(newCourses);
               }}>
-              <View style={styles.course}>
+              <View
+                style={[styles.course, {elevation: item.selected ? 0 : 10}]}>
                 <Text style={item.selected ? styles.light : styles.normal}>
                   {item.name}
                 </Text>
@@ -54,15 +58,17 @@ const CoursesScreen = (props) => {
         }}
       />
       <View style={styles.footer}>
-        <LinearGradient
-          colors={['#EACDA3', '#D6AE7B']}
-          locations={[-0.3127, 0.725]}
-          style={styles.tick}>
-          <Image
-            source={require('../assets/images/Tick.png')}
-            style={styles.tickImage}
-          />
-        </LinearGradient>
+        <TouchableOpacity>
+          <LinearGradient
+            colors={['#EACDA3', '#D6AE7B']}
+            locations={[-0.3127, 0.725]}
+            style={styles.tick}>
+            <Image
+              source={require('../assets/images/Tick.png')}
+              style={styles.tickImage}
+            />
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     </LinearGradient>
   );
@@ -128,7 +134,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
   },
   light: {
     color: 'rgba(58, 58, 58, 0.4)',

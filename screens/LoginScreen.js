@@ -10,8 +10,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-const LoginScreen = (props) => {
-  const {accountType} = props.route.params || 'STUDENT';
+const LoginScreen = ({route, navigation}) => {
+  const accountType = route.params.accountType || 'STUDENT';
   const [state, updateState] = useState({
     name: '',
     password: '',
@@ -25,10 +25,12 @@ const LoginScreen = (props) => {
       locations={[0.4428, 1.4643]}
       style={styles.gradient}>
       <ScrollView>
-        <Image
-          source={require('../assets/images/back-arrow.png')}
-          style={styles.backArrow}
-        />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Image
+            source={require('../assets/images/back-arrow.png')}
+            style={styles.backArrow}
+          />
+        </TouchableOpacity>
         <Text style={styles.welcome}>Welcome Back</Text>
         <View style={[styles.margin, styles.marginTopLarge]}>
           <Text style={styles.label}>
@@ -43,6 +45,7 @@ const LoginScreen = (props) => {
               })
             }
             style={styles.input}
+            textContentType="emailAddress"
           />
         </View>
         <View style={[styles.margin, styles.marginTopSmall]}>
@@ -55,6 +58,8 @@ const LoginScreen = (props) => {
                 password: newText,
               })
             }
+            secureTextEntry
+            textContentType="password"
             style={styles.input}
           />
         </View>
@@ -68,7 +73,8 @@ const LoginScreen = (props) => {
             />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('signup', {accountType})}>
           <View style={[styles.margin, styles.row]}>
             <Text style={styles.label}>Don't have an account?</Text>
             <Text style={[styles.label, styles.register]}>Register</Text>
@@ -121,6 +127,9 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingVertical: 15,
     paddingHorizontal: 15,
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: 'Montserrat-Medium',
   },
   button: {
     flex: 1,
