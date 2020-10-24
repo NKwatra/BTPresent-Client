@@ -57,6 +57,9 @@
 	<array>
 		<string>Montserrat-Medium.ttf</string>
 		<string>Montserrat-Medium.otf</string>
+		<string>Montserrat-Bold.otf</string>
+		<string>Montserrat-SemiBold.otf</string>
+		<string>Roboto-Bold.ttf</string>
 	</array>
 </dict>
 </plist>
