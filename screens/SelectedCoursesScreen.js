@@ -10,6 +10,7 @@ const SelectedCoursesScreen = ({navigation, route}) => {
     {name: 'Frontend Development', id: '4'},
     {name: 'Testing Lab', id: '5'},
   ]);
+  const accountType = route.params.accountType;
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -38,7 +39,14 @@ const SelectedCoursesScreen = ({navigation, route}) => {
           data={courses}
           keyExtractor={(item) => item.id}
           renderItem={({item}) => (
-            <TouchableOpacity style={styles.course}>
+            <TouchableOpacity
+              style={styles.course}
+              onPress={() =>
+                navigation.navigate('attendanceDetail', {
+                  name: item.name,
+                  accountType,
+                })
+              }>
               <Text style={styles.courseName}>{item.name}</Text>
               <Image
                 source={require('../assets/images/right-angle.png')}
