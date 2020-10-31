@@ -62,7 +62,9 @@ const CoursesScreen = ({navigation, route}) => {
           );
         }}
       />
-      <TouchableOpacity style={styles.tick}>
+      <TouchableOpacity
+        style={styles.tick}
+        onPress={() => navigation.navigate('selectedCourses')}>
         <View>
           <Image
             source={require('../assets/images/tick-white.png')}

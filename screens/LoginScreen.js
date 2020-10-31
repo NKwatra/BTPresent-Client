@@ -57,7 +57,8 @@ const LoginScreen = ({route, navigation}) => {
           />
         </View>
 
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('selectedCourses')}>
           <View style={[styles.margin, styles.button]}>
             <Text style={styles.SignIn}>Sign in</Text>
             <Image

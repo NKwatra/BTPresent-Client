@@ -7,6 +7,7 @@ import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import CoursesScreen from './screens/CoursesScreen';
 import SplashScreen from './screens/SplashScreen';
+import SelectedCoursesScreen from './screens/SelectedCoursesScreen';
 
 const {Navigator, Screen} = createStackNavigator();
 
@@ -23,6 +24,7 @@ const App = (props) => {
         <Screen name="signup" component={SignupScreen} />
         <Screen name="courses" component={CoursesScreen} />
         <Screen name="splash" component={SplashScreen} />
+        <Screen name="selectedCourses" component={SelectedCoursesScreen} />
       </Navigator>
     </NavigationContainer>
   );
