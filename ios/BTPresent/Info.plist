@@ -62,6 +62,9 @@
 		<string>Roboto-Bold.ttf</string>
 		<string>Petrona-Bold.ttf</string>
 		<string>Montserrat-Regular.otf</string>
+		<string>IBMPlexSans-Regular.ttf</string>
+		<string>IBMPlexSans-Bold.ttf</string>
+		<string>IBMPlexSans-Medium.ttf</string>
 	</array>
 </dict>
 </plist>
