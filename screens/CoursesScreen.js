@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 import {
   StyleSheet,
   View,
@@ -9,6 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 
 const CoursesScreen = ({navigation, route}) => {
   const [courses, updateCourses] = useState([
@@ -21,14 +21,11 @@ const CoursesScreen = ({navigation, route}) => {
   ]);
 
   return (
-    <LinearGradient
-      style={styles.linearGradient}
-      colors={['rgba(234, 205, 163, 0.1)', 'rgba(214, 174, 123, 0.85)']}
-      locations={[-0.1203, 1.0219]}>
+    <View style={styles.linearGradient}>
       <View style={styles.header}>
         <TouchableOpacity onPress={navigation.goBack}>
           <Image
-            source={require('../assets/images/back-arrow.png')}
+            source={require('../assets/images/back-arrow-white.png')}
             style={styles.backArrow}
           />
         </TouchableOpacity>
@@ -47,65 +44,56 @@ const CoursesScreen = ({navigation, route}) => {
                 newCourses[index].selected = !newCourses[index].selected;
                 updateCourses(newCourses);
               }}>
-              <View
-                style={[styles.course, {elevation: item.selected ? 0 : 10}]}>
-                <Text style={item.selected ? styles.light : styles.normal}>
-                  {item.name}
-                </Text>
-              </View>
+              {item.selected ? (
+                <LinearGradient
+                  colors={['#E9585E', '#5F70B2']}
+                  locations={[0.4, 1.0]}
+                  style={styles.courseGradient}>
+                  <View style={[styles.course, styles.selected]}>
+                    <Text style={styles.courseText}>{item.name}</Text>
+                  </View>
+                </LinearGradient>
+              ) : (
+                <View style={[styles.course, styles.normal]}>
+                  <Text style={styles.courseText}>{item.name}</Text>
+                </View>
+              )}
             </TouchableOpacity>
           );
         }}
       />
-      <View style={styles.footer}>
-        <TouchableOpacity>
-          <LinearGradient
-            colors={['#EACDA3', '#D6AE7B']}
-            locations={[-0.3127, 0.725]}
-            style={styles.tick}>
-            <Image
-              source={require('../assets/images/Tick.png')}
-              style={styles.tickImage}
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+      <TouchableOpacity style={styles.tick}>
+        <View>
+          <Image
+            source={require('../assets/images/tick-white.png')}
+            style={styles.tickImage}
+          />
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   linearGradient: {
     flex: 1,
+    backgroundColor: '#435C59',
   },
   backArrow: {
-    width: 7,
-    height: 12,
-    marginTop: 16,
+    width: 26,
+    height: 21,
+    marginTop: 8,
     marginRight: Dimensions.get('window').width * 0.2,
   },
   header: {
     flexDirection: 'row',
     paddingVertical: 32,
     paddingHorizontal: 24,
-    backgroundColor: '#2F2E41',
-    borderBottomRightRadius: 28,
-    borderBottomLeftRadius: 28,
   },
   courseHeader: {
     fontSize: 24,
     fontFamily: 'Montserrat-SemiBold',
     color: '#FFFFFF',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 48,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    backgroundColor: '#2F2E41',
   },
   tick: {
     width: 60,
@@ -113,8 +101,9 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     elevation: 3,
     position: 'absolute',
-    top: -30,
+    bottom: 12,
     left: '42%',
+    backgroundColor: '#1F1F1F',
   },
   tickImage: {
     marginHorizontal: 18,
@@ -122,10 +111,9 @@ const styles = StyleSheet.create({
   },
   courseContainer: {
     padding: 20,
-    marginBottom: 50,
   },
   course: {
-    backgroundColor: '#3F9C74',
+    backgroundColor: '#EACDA3',
     padding: 32,
     width: 150,
     height: 150,
@@ -135,11 +123,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  light: {
-    color: 'rgba(58, 58, 58, 0.4)',
+  courseGradient: {
+    width: 150,
+    height: 150,
+    borderRadius: 25,
+    marginRight: 20,
+    marginVertical: 20,
+  },
+  courseText: {
+    color: '#3A3A3A',
   },
   normal: {
-    color: '#000000',
+    elevation: 10,
+  },
+  selected: {
+    elevation: 0,
+    width: 140,
+    height: 140,
+    marginHorizontal: 5,
+    marginVertical: 5,
   },
 });
 

@@ -17,10 +17,10 @@ const HomeScreen = ({navigation}) => {
   };
 
   const handleLeftSwipe = () =>
-    navigation.navigate('login', {accountType: 'TEACHER'});
+    navigation.navigate('splash', {accountType: 'TEACHER'});
 
   const handleRightSwipe = () =>
-    navigation.navigate('login', {accountType: 'STUDENT'});
+    navigation.navigate('splash', {accountType: 'STUDENT'});
 
   return (
     <LinearGradient

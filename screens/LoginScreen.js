@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 import {
   StyleSheet,
   Image,
@@ -17,13 +16,7 @@ const LoginScreen = ({route, navigation}) => {
     password: '',
   });
   return (
-    <LinearGradient
-      useAngle
-      angle={198.69}
-      angleCenter={{x: 0.5, y: 0.5}}
-      colors={['#2F2E41', 'rgba(214, 174, 123, 0)']}
-      locations={[0.4428, 1.4643]}
-      style={styles.gradient}>
+    <View style={styles.gradient}>
       <ScrollView>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
@@ -81,26 +74,27 @@ const LoginScreen = ({route, navigation}) => {
           </View>
         </TouchableOpacity>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
+    backgroundColor: '#435C59',
   },
   arrow: {
-    marginTop: 12,
+    marginTop: 8,
   },
   backArrow: {
-    width: 7,
-    height: 12,
+    width: 26,
+    height: 21,
     marginLeft: 24,
     marginTop: 40,
   },
   welcome: {
     fontSize: 36,
-    color: '#FFFFFF',
+    color: '#A2BFBD',
     marginHorizontal: 24,
     marginTop: 36,
     fontFamily: 'Montserrat-Bold',
@@ -115,19 +109,19 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   label: {
-    color: '#FFFFFF',
+    color: '#A2BFBD',
     fontFamily: 'Roboto-Bold',
     fontSize: 15,
     marginLeft: 12,
   },
   input: {
-    borderColor: 'rgba(255,255,255,0.52)',
+    borderColor: '#A2BFBD',
     borderWidth: 2,
     borderStyle: 'solid',
     borderRadius: 15,
     paddingVertical: 15,
     paddingHorizontal: 15,
-    color: '#FFFFFF',
+    color: '#A2BFBD',
     fontSize: 14,
     fontFamily: 'Montserrat-Medium',
   },
@@ -135,15 +129,15 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#2F2E41',
+    backgroundColor: '#EACDA3',
     borderRadius: 28,
     paddingHorizontal: 32,
     paddingVertical: 16,
     marginTop: 82,
   },
   SignIn: {
-    color: '#FFFFFF',
-    fontSize: 24,
+    color: '#435C59',
+    fontSize: 18,
     fontFamily: 'Montserrat-SemiBold',
   },
   row: {
@@ -153,7 +147,7 @@ const styles = StyleSheet.create({
   },
   register: {
     marginLeft: 6,
-    color: '#2F2E41',
+    color: '#EACDA3',
   },
 });
 

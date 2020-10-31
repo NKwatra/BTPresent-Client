@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
 import {
   StyleSheet,
   Image,
@@ -47,13 +46,7 @@ const SignupScreen = ({navigation, route}) => {
   };
 
   return (
-    <LinearGradient
-      useAngle
-      angle={198.69}
-      angleCenter={{x: 0.5, y: 0.5}}
-      colors={['#2F2E41', 'rgba(214, 174, 123, 0)']}
-      locations={[0.4428, 1.4643]}
-      style={styles.gradient}>
+    <View style={styles.gradient}>
       <ScrollView>
         <TouchableOpacity onPress={navigation.goBack}>
           <Image
@@ -162,8 +155,12 @@ const SignupScreen = ({navigation, route}) => {
         </View>
         <TouchableOpacity
           onPress={() => {
-            if (fieldsFilled())
-              navigation.navigate('courses', {...state, accountType});
+            // if (fieldsFilled()) {
+            //   navigation.navigate('courses', {...state, accountType});
+            // } else {
+            //   alert('Please fill all fields');
+            // }
+            navigation.navigate('courses', {...state, accountType});
           }}>
           <View style={styles.next}>
             <Image
@@ -173,35 +170,36 @@ const SignupScreen = ({navigation, route}) => {
           </View>
         </TouchableOpacity>
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
+    backgroundColor: '#435C59',
   },
   backArrow: {
-    width: 7,
-    height: 12,
+    width: 26,
+    height: 21,
     marginLeft: 24,
     marginTop: 40,
   },
   welcome: {
     fontSize: 36,
-    color: '#FFFFFF',
+    color: '#A2BFBD',
     marginHorizontal: 24,
     marginTop: 36,
     fontFamily: 'Montserrat-Bold',
   },
   label: {
-    color: '#FFFFFF',
+    color: '#A2BFBD',
     fontFamily: 'Roboto-Bold',
     fontSize: 15,
     marginLeft: 12,
   },
   input: {
-    borderColor: 'rgba(255,255,255,0.52)',
+    borderColor: '#A2BFBD',
     borderWidth: 2,
     borderStyle: 'solid',
     borderRadius: 15,
@@ -209,7 +207,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: 14,
     fontFamily: 'Montserrat-Medium',
-    color: '#FFFFFF',
+    color: '#A2BFBD',
   },
   margin: {
     marginHorizontal: 24,
@@ -224,7 +222,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     width: 72,
     height: 72,
-    backgroundColor: '#2F2E41',
+    backgroundColor: '#EACDA3',
     alignSelf: 'flex-end',
     marginRight: 40,
     marginTop: 56,
