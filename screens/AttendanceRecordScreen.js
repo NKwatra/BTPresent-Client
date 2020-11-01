@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {
   View,
   Image,
@@ -6,7 +6,10 @@ import {
   Text,
   StyleSheet,
   FlatList,
+  Animated,
+  LayoutAnimation,
 } from 'react-native';
+import {State, PanGestureHandler} from 'react-native-gesture-handler';
 
 const monthsMap = {
   1: 'January',
@@ -23,17 +26,60 @@ const monthsMap = {
   12: 'December',
 };
 
-const Student = ({name, roll}) => {
+const threshold = 120;
+
+const Student = ({name, roll, removeItem}) => {
+  const xPos = useRef(new Animated.Value(0)).current;
+
   return (
-    <View style={styles.studentContainer}>
-      <View style={[styles.studentElement, styles.back]}>
-        <Text>DELETE</Text>
+    <PanGestureHandler
+      activeOffsetX={40}
+      onGestureEvent={Animated.event(
+        [
+          {
+            nativeEvent: {
+              translationX: xPos,
+            },
+          },
+        ],
+        {
+          useNativeDriver: false,
+          listener: (evt) => {
+            const translationX = evt.nativeEvent.translationX;
+            if (translationX >= threshold) {
+              removeItem(roll);
+            }
+          },
+        },
+      )}
+      onHandlerStateChange={(evt) => {
+        console.log('called', evt.nativeEvent.state);
+        const state = evt.nativeEvent.state;
+        const translation = evt.nativeEvent.translationX;
+        if (
+          (state === State.END || state === State.CANCELLED) &&
+          translation < threshold
+        ) {
+          Animated.spring(xPos, {
+            toValue: 0,
+          }).start();
+        }
+      }}>
+      <View style={styles.studentContainer}>
+        <View style={[styles.studentElement, styles.back]}>
+          <Text>DELETE</Text>
+        </View>
+        <Animated.View
+          style={[
+            styles.studentElement,
+            styles.front,
+            {transform: [{translateX: xPos}]},
+          ]}>
+          <Text style={styles.studentName}>{name}</Text>
+          <Text style={styles.studentRoll}>{roll}</Text>
+        </Animated.View>
       </View>
-      <View style={[styles.studentElement, styles.front]}>
-        <Text style={styles.studentName}>{name}</Text>
-        <Text style={styles.studentRoll}>{roll}</Text>
-      </View>
-    </View>
+    </PanGestureHandler>
   );
 };
 
@@ -67,6 +113,14 @@ const AttendanceRecordScreen = ({navigation, route}) => {
     ],
     editing: false,
   });
+
+  const removeListItem = (roll) => {
+    const newStudents = state.students.filter(
+      (student) => student.roll !== roll,
+    );
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+    updateState({editing: state.editing, students: newStudents});
+  };
 
   const formatDate = ({day, month, year}) => {
     if (day < 10) {
@@ -129,7 +183,9 @@ const AttendanceRecordScreen = ({navigation, route}) => {
       <FlatList
         data={state.students}
         keyExtractor={(item) => item.roll}
-        renderItem={({item}) => <Student {...item} />}
+        renderItem={({item}) => (
+          <Student {...item} removeItem={removeListItem} />
+        )}
         style={styles.studentList}
       />
     </View>
