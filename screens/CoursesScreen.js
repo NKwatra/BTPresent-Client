@@ -20,6 +20,8 @@ const CoursesScreen = ({navigation, route}) => {
     {selected: false, name: 'Data Mining', id: '6'},
   ]);
 
+  const {accountType} = route.params;
+
   return (
     <View style={styles.linearGradient}>
       <View style={styles.header}>
@@ -64,7 +66,7 @@ const CoursesScreen = ({navigation, route}) => {
       />
       <TouchableOpacity
         style={styles.tick}
-        onPress={() => navigation.navigate('selectedCourses')}>
+        onPress={() => navigation.navigate('selectedCourses', {accountType})}>
         <View>
           <Image
             source={require('../assets/images/tick-white.png')}

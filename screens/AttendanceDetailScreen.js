@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {View, StyleSheet, Image, TouchableOpacity, Text} from 'react-native';
 import {Calendar} from 'react-native-calendars';
 
@@ -132,6 +132,15 @@ const AttendanceDetailScreen = ({navigation, route}) => {
           theme={calendarTheme}
           style={styles.calendarContainer}
           markedDates={state.markedDates}
+          onDayPress={(date) => {
+            if (route.params.accountType === 'TEACHER') {
+              navigation.navigate('attendanceRecord', {
+                accountType: route.params.accountType,
+                date,
+                name: route.params.name,
+              });
+            }
+          }}
         />
       ) : null}
     </View>

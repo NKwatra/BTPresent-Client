@@ -9,6 +9,7 @@ import CoursesScreen from './screens/CoursesScreen';
 import SplashScreen from './screens/SplashScreen';
 import SelectedCoursesScreen from './screens/SelectedCoursesScreen';
 import AttendanceDetailScreen from './screens/AttendanceDetailScreen';
+import AttendanceRecordScreen from './screens/AttendanceRecordScreen';
 
 const {Navigator, Screen} = createStackNavigator();
 
@@ -27,6 +28,7 @@ const App = (props) => {
         <Screen name="splash" component={SplashScreen} />
         <Screen name="selectedCourses" component={SelectedCoursesScreen} />
         <Screen name="attendanceDetail" component={AttendanceDetailScreen} />
+        <Screen name="attendanceRecord" component={AttendanceRecordScreen} />
       </Navigator>
     </NavigationContainer>
   );

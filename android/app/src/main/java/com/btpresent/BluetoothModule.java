@@ -185,4 +185,11 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
             startScan();
         }
     }
+
+
+    // method to turn on bluetooth,
+    // pre req: ask for location permission and permission to turn
+    // on bluetooth.
+    // @ReactMethod
+
 }
