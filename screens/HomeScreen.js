@@ -3,7 +3,7 @@ import {StyleSheet, Image, Dimensions} from 'react-native';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 import Background from '../components/Background';
 import AccountType from '../components/AccountType';
-import {setAccountType} from '../utils/AsyncStorage';
+import {getAccountType, setAccountType} from '../utils/AsyncStorage';
 import {isAuthenticated} from '../utils/Auth';
 import {PacmanIndicator} from 'react-native-indicators';
 
@@ -12,12 +12,20 @@ const HomeScreen = ({navigation}) => {
 
   useEffect(() => {
     setTimeout(() => {
-      const authStatePromise = isAuthenticated();
-      authStatePromise.then((authState) => {
-        if (authState) {
-          navigation.navigate('login', {...authState});
+      getAccountType().then((accountType) => {
+        if (accountType === null) {
+          setLoading(false);
+        } else {
+          const authStatePromise = isAuthenticated();
+          authStatePromise.then((authState) => {
+            if (authState) {
+              navigation.navigate('selectedCourses', {...authState});
+            } else {
+              navigation.navigate('login', {accountType});
+            }
+            setLoading(false);
+          });
         }
-        setLoading(false);
       });
     }, 300);
   }, [navigation]);

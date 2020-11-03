@@ -1,19 +1,16 @@
 import React, {useEffect} from 'react';
-import LinearGradient from 'react-native-linear-gradient';
+import Background from '../components/Background';
 import {StyleSheet, Image, Text} from 'react-native';
 
 const SplashScreen = ({navigation, route}) => {
   const accountType = route.params.accountType;
 
   useEffect(() => {
-    setTimeout(() => navigation.navigate('login', {accountType}), 2000);
+    setTimeout(() => navigation.navigate('login', {accountType}), 1500);
   });
 
   return (
-    <LinearGradient
-      style={styles.linearGradient}
-      colors={['rgba(234, 205, 163, 0.1)', 'rgba(214, 174, 123, 0.85)']}
-      locations={[-0.1203, 1.0219]}>
+    <Background>
       <Image
         source={
           accountType === 'STUDENT'
@@ -23,19 +20,16 @@ const SplashScreen = ({navigation, route}) => {
         style={styles.mainImage}
       />
       <Text style={styles.title}>{accountType}</Text>
-    </LinearGradient>
+    </Background>
   );
 };
 
 export default SplashScreen;
 
 const styles = StyleSheet.create({
-  linearGradient: {
-    flex: 1,
-    paddingHorizontal: 32,
-  },
   mainImage: {
     marginTop: 96,
+    marginHorizontal: 32,
   },
   title: {
     marginTop: 48,

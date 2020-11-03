@@ -4,10 +4,13 @@ import {
   Image,
   Text,
   View,
-  TextInput,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import BackArrow from '../components/BackArrow';
+import FormInput from '../components/FormInput';
+import {setUserCredentials} from '../utils/AsyncStorage';
+import {login} from '../utils/Auth';
 
 const LoginScreen = ({route, navigation}) => {
   const accountType = route.params.accountType || 'STUDENT';
@@ -15,50 +18,41 @@ const LoginScreen = ({route, navigation}) => {
     name: '',
     password: '',
   });
+
+  const loginUser = () => {
+    login({...state, accountType}).then(({userId, universityId, message}) => {
+      if (message.length > 0) {
+        alert('invalid credentials');
+      } else {
+        navigation.navigate('selectedCourses', {userId});
+        setUserCredentials({userId, universityId});
+      }
+    });
+  };
+
   return (
     <View style={styles.gradient}>
       <ScrollView>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Image
-            source={require('../assets/images/back-arrow.png')}
-            style={styles.backArrow}
-          />
-        </TouchableOpacity>
+        <BackArrow goBack={navigation.goBack} />
         <Text style={styles.welcome}>Welcome Back</Text>
-        <View style={[styles.margin, styles.marginTopLarge]}>
-          <Text style={styles.label}>
-            {accountType === 'STUDENT' ? 'Username' : 'Email'}
-          </Text>
-          <TextInput
-            value={state.name}
-            onChangeText={(newText) =>
-              updateState({
-                ...state,
-                name: newText,
-              })
-            }
-            style={styles.input}
-            textContentType="emailAddress"
-          />
-        </View>
-        <View style={[styles.margin, styles.marginTopSmall]}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            value={state.password}
-            onChangeText={(newText) =>
-              updateState({
-                ...state,
-                password: newText,
-              })
-            }
-            secureTextEntry
-            textContentType="password"
-            style={styles.input}
-          />
-        </View>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('selectedCourses', {accountType})}>
+        <FormInput
+          first
+          value={state.name}
+          updateValue={(newValue) => updateState({...state, name: newValue})}
+          label={accountType === 'STUDENT' ? 'Username' : 'Email'}
+          type={accountType === 'STUDENT' ? '' : 'email'}
+          extras={{textContentType: 'emailAddress'}}
+        />
+        <FormInput
+          value={state.password}
+          updateValue={(newValue) =>
+            updateState({...state, password: newValue})
+          }
+          label="Password"
+          type="password"
+          extras={{textContentType: 'password', secureTextEntry: true}}
+        />
+        <TouchableOpacity onPress={loginUser}>
           <View style={[styles.margin, styles.button]}>
             <Text style={styles.SignIn}>Sign in</Text>
             <Image
@@ -87,44 +81,12 @@ const styles = StyleSheet.create({
   arrow: {
     marginTop: 8,
   },
-  backArrow: {
-    width: 26,
-    height: 21,
-    marginLeft: 24,
-    marginTop: 40,
-  },
   welcome: {
     fontSize: 36,
     color: '#A2BFBD',
     marginHorizontal: 24,
     marginTop: 36,
     fontFamily: 'Montserrat-Bold',
-  },
-  margin: {
-    marginHorizontal: 24,
-  },
-  marginTopLarge: {
-    marginTop: 64,
-  },
-  marginTopSmall: {
-    marginTop: 40,
-  },
-  label: {
-    color: '#A2BFBD',
-    fontFamily: 'Roboto-Bold',
-    fontSize: 15,
-    marginLeft: 12,
-  },
-  input: {
-    borderColor: '#A2BFBD',
-    borderWidth: 2,
-    borderStyle: 'solid',
-    borderRadius: 15,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    color: '#A2BFBD',
-    fontSize: 14,
-    fontFamily: 'Montserrat-Medium',
   },
   button: {
     flex: 1,
@@ -149,6 +111,15 @@ const styles = StyleSheet.create({
   register: {
     marginLeft: 6,
     color: '#EACDA3',
+  },
+  margin: {
+    marginHorizontal: 24,
+  },
+  label: {
+    color: '#A2BFBD',
+    fontFamily: 'Roboto-Bold',
+    fontSize: 15,
+    marginLeft: 12,
   },
 });
 
