@@ -15,6 +15,9 @@ import com.facebook.react.bridge.WritableNativeArray;
 
 import android.widget.Toast;
 import java.util.HashSet;
+import java.net.NetworkInterface;
+import java.util.Collections;
+import java.util.List;
 import android.os.Build;
 import android.content.BroadcastReceiver;
 import androidx.core.content.ContextCompat;
@@ -41,6 +44,37 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
     public static final int LOCATION_REQUEST_CODE = 100;
     public static final int BLUETOOTH_REQUEST_CODE = 101;
 
+
+    /*
+        Method to fetch device MAC address
+    */
+    @ReactMethod
+    public void getMacAddress(Promise promise)
+    {
+        try 
+        {
+            List <NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface nif: all) {
+                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+    
+                byte[] macBytes = nif.getHardwareAddress();
+                if (macBytes == null) {
+                    promise.resolve("");
+                }
+    
+                StringBuilder res1 = new StringBuilder();
+                for (byte b: macBytes) {
+                    res1.append(String.format("%02X:", b));
+                }
+    
+                if (res1.length() > 0) {
+                    res1.deleteCharAt(res1.length() - 1);
+                }
+                promise.resolve(res1.toString());
+            }
+        } catch (Exception ex) {}
+        promise.resolve("02:00:00:00:00:00");
+    }
 
     /* 
         Create a listener for listening to activity results

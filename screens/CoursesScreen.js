@@ -20,7 +20,8 @@ const CoursesScreen = ({navigation, route}) => {
     {selected: false, name: 'Data Mining', id: '6'},
   ]);
 
-  const {accountType} = route.params;
+  const {accountType, address} = route.params;
+  console.log(address);
 
   return (
     <View style={styles.linearGradient}>

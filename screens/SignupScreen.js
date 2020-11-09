@@ -1,13 +1,18 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Image,
   Text,
   View,
-  TextInput,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import BackArrow from '../components/BackArrow';
+import FormInput from '../components/FormInput';
+import {PacmanIndicator} from 'react-native-indicators';
+import {getRegisteredUniversityNames} from '../utils/Auth';
+import SearchableDropdown from '../components/SearchableDropdown';
+import BluetoothModule from '../utils/BluetoothModule';
 
 const SignupScreen = ({navigation, route}) => {
   const [state, updateState] = useState({
@@ -18,7 +23,19 @@ const SignupScreen = ({navigation, route}) => {
     university: '',
     altemail: '',
     enrollmentNo: '',
+    universityOptions: [],
+    loading: true,
   });
+
+  useEffect(() => {
+    getRegisteredUniversityNames().then((universities) =>
+      updateState((oldState) => ({
+        ...oldState,
+        universityOptions: universities,
+        loading: false,
+      })),
+    );
+  }, []);
 
   const accountType = route.params.accountType || 'STUDENT';
 
@@ -47,129 +64,119 @@ const SignupScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.gradient}>
-      <ScrollView>
-        <TouchableOpacity onPress={navigation.goBack}>
-          <Image
-            source={require('../assets/images/back-arrow.png')}
-            style={styles.backArrow}
-          />
-        </TouchableOpacity>
-        <Text style={styles.welcome}>Create Account</Text>
-        <View style={[styles.margin, styles.marginTopLarge]}>
-          <Text style={styles.label}>First Name</Text>
-          <TextInput
+      {state.loading ? (
+        <PacmanIndicator color="#EACDA3" size={200} />
+      ) : (
+        <ScrollView>
+          <BackArrow goBack={navigation.goBack} />
+          <Text style={styles.welcome}>Create Account</Text>
+          <FormInput
+            label="First Name"
+            first
             value={state.Fname}
-            onChangeText={(newText) =>
+            updateValue={(newText) =>
               updateState({
                 ...state,
                 Fname: newText,
               })
             }
-            style={styles.input}
           />
-        </View>
-        <View style={[styles.margin, styles.marginTopSmall]}>
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput
+          <FormInput
+            label="Last Name"
             value={state.Lname}
-            onChangeText={(newText) =>
+            updateValue={(newText) =>
               updateState({
                 ...state,
                 Lname: newText,
               })
             }
-            style={styles.input}
           />
-        </View>
-        <View style={[styles.margin, styles.marginTopSmall]}>
-          <Text style={styles.label}>University</Text>
-          <TextInput
-            value={state.univeristy}
-            onChangeText={(newText) =>
-              updateState({
-                ...state,
-                university: newText,
-              })
-            }
-            style={styles.input}
-          />
-        </View>
-        <View style={[styles.margin, styles.marginTopSmall]}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
+          <View style={[styles.margin, styles.marginTopSmall]}>
+            <Text style={styles.label}>University</Text>
+            <SearchableDropdown
+              items={state.universityOptions}
+              updateSelectedItem={(id) =>
+                updateState({
+                  ...state,
+                  university: id,
+                })
+              }
+            />
+          </View>
+          <FormInput
             value={state.email}
-            onChangeText={(newText) =>
+            updateValue={(newText) =>
               updateState({
                 ...state,
                 email: newText,
               })
             }
-            style={styles.input}
-            textContentType="emailAddress"
+            label="Email"
+            extras={{textContentType: 'emailAddress'}}
           />
-        </View>
-        {accountType === 'STUDENT' ? (
-          <>
-            <View style={[styles.margin, styles.marginTopSmall]}>
-              <Text style={styles.label}>Alternate Email</Text>
-              <TextInput
+          {accountType === 'STUDENT' ? (
+            <>
+              <FormInput
                 value={state.altemail}
-                onChangeText={(newText) =>
+                updateValue={(newText) =>
                   updateState({
                     ...state,
                     altemail: newText,
                   })
                 }
-                style={styles.input}
-                textContentType="emailAddress"
+                label="Alternative Email"
+                extras={{textContentType: 'emailAddress'}}
               />
-            </View>
-            <View style={[styles.margin, styles.marginTopSmall]}>
-              <Text style={styles.label}>Enrollment Number</Text>
-              <TextInput
+
+              <FormInput
                 value={state.enrollmentNo}
-                onChangeText={(newText) =>
+                updateValue={(newText) =>
                   updateState({
                     ...state,
                     enrollmentNo: newText,
                   })
                 }
-                style={styles.input}
+                label="Enrollment Number"
               />
-            </View>
-          </>
-        ) : null}
-        <View style={[styles.margin, styles.marginTopSmall]}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
+            </>
+          ) : null}
+
+          <FormInput
+            label="Password"
             value={state.password}
-            onChangeText={(newText) =>
+            updateValue={(newText) =>
               updateState({
                 ...state,
                 password: newText,
               })
             }
-            style={styles.input}
-            secureTextEntry
+            extras={{textContentType: 'password', secureTextEntry: true}}
           />
-        </View>
-        <TouchableOpacity
-          onPress={() => {
-            // if (fieldsFilled()) {
-            //   navigation.navigate('courses', {...state, accountType});
-            // } else {
-            //   alert('Please fill all fields');
-            // }
-            navigation.navigate('courses', {...state, accountType});
-          }}>
-          <View style={styles.next}>
-            <Image
-              source={require('../assets/images/right-arrow.png')}
-              style={styles.arrow}
-            />
-          </View>
-        </TouchableOpacity>
-      </ScrollView>
+
+          <TouchableOpacity
+            onPress={() => {
+              // if (fieldsFilled()) {
+              //   navigation.navigate('courses', {...state, accountType});
+              // } else {
+              //   alert('Please fill all fields');
+              // }
+              BluetoothModule.getMacAddress().then((address) =>
+                navigation.navigate('courses', {
+                  ...state,
+                  accountType,
+                  address,
+                }),
+              );
+            }}>
+            <View style={styles.next}>
+              <Image
+                source={require('../assets/images/right-arrow.png')}
+                style={styles.arrow}
+              />
+            </View>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -179,44 +186,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#435C59',
   },
-  backArrow: {
-    width: 26,
-    height: 21,
-    marginLeft: 24,
-    marginTop: 40,
-  },
   welcome: {
     fontSize: 36,
     color: '#A2BFBD',
     marginHorizontal: 24,
     marginTop: 36,
     fontFamily: 'Montserrat-Bold',
-  },
-  label: {
-    color: '#A2BFBD',
-    fontFamily: 'Roboto-Bold',
-    fontSize: 15,
-    marginLeft: 12,
-  },
-  input: {
-    borderColor: '#A2BFBD',
-    borderWidth: 2,
-    borderStyle: 'solid',
-    borderRadius: 15,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    fontSize: 14,
-    fontFamily: 'Montserrat-Medium',
-    color: '#A2BFBD',
-  },
-  margin: {
-    marginHorizontal: 24,
-  },
-  marginTopLarge: {
-    marginTop: 64,
-  },
-  marginTopSmall: {
-    marginTop: 40,
   },
   next: {
     borderRadius: 50,
@@ -229,10 +204,46 @@ const styles = StyleSheet.create({
     marginBottom: 36,
     position: 'relative',
   },
+  input: {
+    borderColor: '#A2BFBD',
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderTopLeftRadius: 15,
+    borderBottomLeftRadius: 15,
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
+    paddingVertical: 18,
+    paddingHorizontal: 15,
+    color: '#A2BFBD',
+    fontSize: 14,
+    fontFamily: 'Montserrat-Medium',
+    backgroundColor: 'transparent',
+  },
   arrow: {
     position: 'absolute',
     top: 28,
     left: 28,
+  },
+  margin: {
+    marginHorizontal: 24,
+  },
+  marginTopSmall: {
+    marginTop: 40,
+  },
+  label: {
+    color: '#A2BFBD',
+    fontFamily: 'Roboto-Bold',
+    fontSize: 15,
+    marginLeft: 12,
+  },
+  dropdown: {
+    width: '100%',
+    zIndex: 100,
+  },
+  placeHolder: {
+    color: '#A2BFBD',
+    fontSize: 14,
+    fontFamily: 'Montserrat-Medium',
   },
 });
 

@@ -18,3 +18,18 @@ export const login = ({name, password, accountType}) => {
     setTimeout(() => resolve(loginCredentials), 1000);
   });
 };
+
+// TODO : extract the name and id of registered univerisities
+export const getRegisteredUniversityNames = () => {
+  const univerisities = [
+    {name: 'GGSIPU', id: 'ru2345'},
+    {name: 'DTU', id: 'q1da34'},
+    {name: 'NSUT', id: '9nd842'},
+    {name: 'DU', id: 'mzaj832f'},
+    {name: 'IITH', id: 'abd2w43'},
+  ];
+
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(univerisities), 2000);
+  });
+};
