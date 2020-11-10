@@ -104,7 +104,7 @@ const CoursesScreen = ({navigation, route}) => {
                 if (response.hasOwnProperty('message')) {
                   alert(response.message);
                 } else {
-                  setUserId(response.id);
+                  setUserId(response.token);
                   setUserCourses(selectedCourses);
                   navigation.navigate('selectedCourses', {
                     accountType,

@@ -1,11 +1,28 @@
 import Config from 'react-native-config';
+import {getUserId, getUserCourses} from './AsyncStorage';
 
 // TODO: extract cookie expiration date to check if user is still
 // authenticated, if authenticated return user courses
 // else return false
 export const isAuthenticated = () => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => resolve(false), 2000);
+  const url = Config.API_URL + '/auth/check';
+  return getUserId().then((userId) => {
+    if (userId == null) {
+      return false;
+    }
+
+    return fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${userId}`,
+      },
+    }).then((response) => {
+      if (response.ok) {
+        return getUserCourses().then((courses) => courses);
+      } else {
+        return false;
+      }
+    });
   });
 };
 
