@@ -1,5 +1,8 @@
+import Config from 'react-native-config';
+
 // TODO: extract cookie expiration date to check if user is still
-// authenticated
+// authenticated, if authenticated return user courses
+// else return false
 export const isAuthenticated = () => {
   return new Promise((resolve, reject) => {
     setTimeout(() => resolve(false), 2000);
@@ -21,15 +24,30 @@ export const login = ({name, password, accountType}) => {
 
 // TODO : extract the name and id of registered univerisities
 export const getRegisteredUniversityNames = () => {
-  const univerisities = [
-    {name: 'GGSIPU', id: 'ru2345'},
-    {name: 'DTU', id: 'q1da34'},
-    {name: 'NSUT', id: '9nd842'},
-    {name: 'DU', id: 'mzaj832f'},
-    {name: 'IITH', id: 'abd2w43'},
-  ];
+  const url = Config.API_URL + '/info/universities';
+  return fetch(url)
+    .then((response) => response.json())
+    .then((universities) => universities);
+};
 
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(univerisities), 2000);
-  });
+// Function to extract university courses by university
+// used during sign up of user
+export const getUniversityCourses = (universityId) => {
+  const url = Config.API_URL + '/info/courses/' + universityId;
+  return fetch(url)
+    .then((response) => response.json())
+    .then((courses) => courses.map((course) => ({...course, selected: false})));
+};
+
+// Function to Sign up a new user
+export const signUp = (userData) => {
+  const url = Config.API_URL + '/auth/signup';
+  return fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(userData),
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+  }).then((response) => response.json());
 };

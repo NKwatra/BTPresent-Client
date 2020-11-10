@@ -19,7 +19,10 @@ const HomeScreen = ({navigation}) => {
           const authStatePromise = isAuthenticated();
           authStatePromise.then((authState) => {
             if (authState) {
-              navigation.navigate('selectedCourses', {...authState});
+              navigation.navigate('selectedCourses', {
+                ...authState,
+                accountType,
+              });
             } else {
               navigation.navigate('login', {accountType});
             }

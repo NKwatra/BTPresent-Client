@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   View,
@@ -9,72 +9,119 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {PacmanIndicator} from 'react-native-indicators';
+import {getUniversityCourses, signUp} from '../utils/Auth';
+import {setUserId, setUserCourses} from '../utils/AsyncStorage';
 
 const CoursesScreen = ({navigation, route}) => {
-  const [courses, updateCourses] = useState([
-    {selected: false, name: 'Advanced Computer Networks', id: '1'},
-    {selected: false, name: 'Software Testing', id: '2'},
-    {selected: false, name: 'FEDT', id: '3'},
-    {selected: false, name: 'Artificial Intelligence', id: '4'},
-    {selected: false, name: 'Advanced Java', id: '5'},
-    {selected: false, name: 'Data Mining', id: '6'},
-  ]);
+  const [courses, updateCourses] = useState([]);
 
-  const {accountType, address} = route.params;
-  console.log(address);
+  const [loading, updateLoading] = useState(true);
+  const {university} = route.params;
+  useEffect(() => {
+    getUniversityCourses(university).then((Courses) => {
+      updateCourses(Courses);
+      updateLoading(false);
+    });
+  }, [university]);
 
   return (
     <View style={styles.linearGradient}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigation.goBack}>
-          <Image
-            source={require('../assets/images/back-arrow-white.png')}
-            style={styles.backArrow}
-          />
-        </TouchableOpacity>
-        <Text style={styles.courseHeader}>Courses</Text>
-      </View>
-      <FlatList
-        data={courses}
-        keyExtractor={(course) => course.id}
-        numColumns={2}
-        style={styles.courseContainer}
-        renderItem={({item, index}) => {
-          return (
-            <TouchableOpacity
-              onPress={() => {
-                let newCourses = [...courses];
-                newCourses[index].selected = !newCourses[index].selected;
-                updateCourses(newCourses);
-              }}>
-              {item.selected ? (
-                <LinearGradient
-                  colors={['#E9585E', '#5F70B2']}
-                  locations={[0.4, 1.0]}
-                  style={styles.courseGradient}>
-                  <View style={[styles.course, styles.selected]}>
-                    <Text style={styles.courseText}>{item.name}</Text>
-                  </View>
-                </LinearGradient>
-              ) : (
-                <View style={[styles.course, styles.normal]}>
-                  <Text style={styles.courseText}>{item.name}</Text>
-                </View>
-              )}
+      {loading ? (
+        <PacmanIndicator color="#EACDA3" size={200} />
+      ) : (
+        <>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={navigation.goBack}>
+              <Image
+                source={require('../assets/images/back-arrow-white.png')}
+                style={styles.backArrow}
+              />
             </TouchableOpacity>
-          );
-        }}
-      />
-      <TouchableOpacity
-        style={styles.tick}
-        onPress={() => navigation.navigate('selectedCourses', {accountType})}>
-        <View>
-          <Image
-            source={require('../assets/images/tick-white.png')}
-            style={styles.tickImage}
+            <Text style={styles.courseHeader}>Courses</Text>
+          </View>
+          <FlatList
+            data={courses}
+            keyExtractor={(course) => course.id}
+            numColumns={2}
+            style={styles.courseContainer}
+            renderItem={({item, index}) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    let newCourses = [...courses];
+                    newCourses[index].selected = !newCourses[index].selected;
+                    updateCourses(newCourses);
+                  }}>
+                  {item.selected ? (
+                    <LinearGradient
+                      colors={['#E9585E', '#5F70B2']}
+                      locations={[0.4, 1.0]}
+                      style={styles.courseGradient}>
+                      <View style={[styles.course, styles.selected]}>
+                        <Text style={styles.courseText}>{item.name}</Text>
+                      </View>
+                    </LinearGradient>
+                  ) : (
+                    <View style={[styles.course, styles.normal]}>
+                      <Text style={styles.courseText}>{item.name}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            }}
           />
-        </View>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.tick}
+            onPress={() => {
+              const {
+                Fname,
+                Lname,
+                email,
+                password,
+                altemail,
+                enrollmentNo,
+                address,
+                accountType,
+              } = route.params;
+
+              const selectedCourses = courses.filter(
+                (course) => course.selected,
+              );
+
+              signUp({
+                fName: Fname,
+                lName: Lname,
+                password,
+                email,
+                university,
+                altEmail: altemail,
+                enrollNo: enrollmentNo,
+                macAddress: address,
+                accountType,
+                courses: selectedCourses.map((course) => course.id),
+              }).then((response) => {
+                if (response.hasOwnProperty('message')) {
+                  alert(response.message);
+                } else {
+                  setUserId(response.id);
+                  setUserCourses(selectedCourses);
+                  navigation.navigate('selectedCourses', {
+                    accountType,
+                    selectedCourses,
+                  });
+                }
+              });
+            }}>
+            <View>
+              <Image
+                source={require('../assets/images/tick-white.png')}
+                style={styles.tickImage}
+              />
+            </View>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 };

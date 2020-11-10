@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ACCOUNT_TYPE = 'accountType';
 const USER_ID = 'user_id';
+const USER_COURSES = 'user_courses';
 const UNIVERSITY_ID = 'university_id';
 
 export const setAccountType = (accountType) => {
@@ -12,6 +13,27 @@ export const setAccountType = (accountType) => {
 
 export const getAccountType = () => {
   return AsyncStorage.getItem(ACCOUNT_TYPE).catch((err) => console.log(err));
+};
+
+export const setUserId = (id) => {
+  return AsyncStorage.setItem(USER_ID, id).catch((err) => console.log(err));
+};
+
+export const getUserId = () => {
+  return AsyncStorage.getItem(USER_ID).catch((err) => console.log(err));
+};
+
+export const setUserCourses = (courses) => {
+  return AsyncStorage.setItem(
+    USER_COURSES,
+    JSON.stringify(courses),
+  ).catch((err) => console.log(err));
+};
+
+export const getUserCourses = () => {
+  return AsyncStorage.getItem(USER_COURSES)
+    .then((courses) => JSON.parse(courses))
+    .catch((err) => console.log(err));
 };
 
 export const setUserCredentials = ({userId, universityId}) => {

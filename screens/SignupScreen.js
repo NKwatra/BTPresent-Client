@@ -155,18 +155,17 @@ const SignupScreen = ({navigation, route}) => {
 
           <TouchableOpacity
             onPress={() => {
-              // if (fieldsFilled()) {
-              //   navigation.navigate('courses', {...state, accountType});
-              // } else {
-              //   alert('Please fill all fields');
-              // }
-              BluetoothModule.getMacAddress().then((address) =>
-                navigation.navigate('courses', {
-                  ...state,
-                  accountType,
-                  address,
-                }),
-              );
+              if (fieldsFilled()) {
+                BluetoothModule.getMacAddress().then((address) =>
+                  navigation.navigate('courses', {
+                    ...state,
+                    accountType,
+                    address,
+                  }),
+                );
+              } else {
+                alert('Please fill all fields');
+              }
             }}>
             <View style={styles.next}>
               <Image
