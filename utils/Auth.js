@@ -1,16 +1,23 @@
 import Config from 'react-native-config';
-import {getUserId, getUserCourses} from './AsyncStorage';
+import {
+  getUserId,
+  getUserCourses,
+  setUserId,
+  setUserCourses,
+} from './AsyncStorage';
 
-// TODO: extract cookie expiration date to check if user is still
-// authenticated, if authenticated return user courses
-// else return false
+/* Function to check if user is still authenticated */
 export const isAuthenticated = () => {
   const url = Config.API_URL + '/auth/check';
+
+  /* Extract API Token from local storage */
   return getUserId().then((userId) => {
     if (userId == null) {
+      /* No API token, so first time using app or logout by choice */
       return false;
     }
 
+    /* make a call to backend to check if current token is still valid */
     return fetch(url, {
       method: 'POST',
       headers: {
@@ -18,28 +25,68 @@ export const isAuthenticated = () => {
       },
     }).then((response) => {
       if (response.ok) {
+        /* Extract list of courses enrolled by user and pass them */
         return getUserCourses().then((courses) => courses);
       } else {
+        /* Token invalid, so user needs to login again */
         return false;
       }
     });
   });
 };
 
-// TODO: extract device MAC addess here and sent it with other
-// cedentials
-export const login = ({name, password, accountType}) => {
-  return new Promise((resolve) => {
-    const loginCredentials = {
-      universityId: 'ab235sde1f',
-      userId: 'e3h2cnsa96r42w',
-      message: '',
-    };
-    setTimeout(() => resolve(loginCredentials), 1000);
+/*
+  Function to login a user into the app
+*/
+export const login = ({name, password, university, address}) => {
+  const url = Config.API_URL + '/auth/login';
+  /*
+    Format username so that API can understand and extract all useful
+    data from it.
+  */
+  let username = name + '$' + university + '$' + address;
+  return fetch(url, {
+    method: 'POST',
+    body: JSON.stringify({username, password}),
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+  }).then((response) => {
+    return response.json().then((result) => {
+      /*
+        In case of a successful login
+      */
+      if (response.ok) {
+        /*
+          Update user data in local storage and then send 
+          data to login screen
+        */
+        let {selectedCourses, token} = result;
+        selectedCourses = selectedCourses.map((course) => ({
+          name: course.courseName,
+          id: course._id,
+        }));
+        return Promise.all([
+          setUserId(token),
+          setUserCourses(selectedCourses),
+        ]).then(() => ({
+          navigate: true,
+          selectedCourses,
+        }));
+      } else {
+        /*
+          Otheriwse display an error message in login screen
+        */
+        return {navigate: false, message: result.message};
+      }
+    });
   });
 };
 
-// TODO : extract the name and id of registered univerisities
+/*
+  Function to get the name of all registered universities from API
+*/
 export const getRegisteredUniversityNames = () => {
   const url = Config.API_URL + '/info/universities';
   return fetch(url)

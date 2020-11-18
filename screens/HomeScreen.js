@@ -8,22 +8,41 @@ import {isAuthenticated} from '../utils/Auth';
 import {PacmanIndicator} from 'react-native-indicators';
 
 const HomeScreen = ({navigation}) => {
+  /*
+    To keep track of loading state of current screen
+  */
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setTimeout(() => {
+      /*
+        Check if user had previously set account type
+      */
       getAccountType().then((accountType) => {
         if (accountType === null) {
+          /*
+            No account type, so first time app loading, stop loading
+            and display home page
+          */
           setLoading(false);
         } else {
+          /*
+            check if user is still authenticated
+          */
           const authStatePromise = isAuthenticated();
           authStatePromise.then((authState) => {
+            /*
+              Still authenticated, display the courses of user
+            */
             if (authState) {
               navigation.navigate('selectedCourses', {
-                ...authState,
+                selectedCourses: authState,
                 accountType,
               });
             } else {
+              /*
+                Logged out or first time login, redirect to login page
+              */
               navigation.navigate('login', {accountType});
             }
             setLoading(false);
@@ -33,6 +52,9 @@ const HomeScreen = ({navigation}) => {
     }, 300);
   }, [navigation]);
 
+  /*
+    Function to handle swipe by user for account type selection
+  */
   const handleSwipe = (direction) => {
     const {SWIPE_LEFT, SWIPE_RIGHT} = swipeDirections;
     switch (direction) {
@@ -45,12 +67,17 @@ const HomeScreen = ({navigation}) => {
     }
   };
 
+  /*
+    Select the account type as teacher and move to next screen
+  */
   const handleLeftSwipe = () => {
     setAccountType('TEACHER').then(
       navigation.navigate('splash', {accountType: 'TEACHER'}),
     );
   };
-
+  /*
+    Select the account type as student and move to next screen
+  */
   const handleRightSwipe = () => {
     setAccountType('STUDENT').then(
       navigation.navigate('splash', {accountType: 'STUDENT'}),

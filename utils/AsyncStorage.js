@@ -5,12 +5,14 @@ const USER_ID = 'user_id';
 const USER_COURSES = 'user_courses';
 const UNIVERSITY_ID = 'university_id';
 
+/* To set the user selected account type for the app */
 export const setAccountType = (accountType) => {
   return AsyncStorage.setItem(ACCOUNT_TYPE, accountType).catch((err) => {
     console.log(err);
   });
 };
 
+/* To get the user selected account type for this app */
 export const getAccountType = () => {
   return AsyncStorage.getItem(ACCOUNT_TYPE).catch((err) => console.log(err));
 };

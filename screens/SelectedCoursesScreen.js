@@ -1,16 +1,9 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {View, StyleSheet, Image, Text, TouchableOpacity} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 const SelectedCoursesScreen = ({navigation, route}) => {
-  const [courses, updateCourses] = useState([
-    {name: 'Artificial Intelligence', id: '1'},
-    {name: 'Advance Computer Network', id: '2'},
-    {name: 'Software Testing', id: '3'},
-    {name: 'Frontend Development', id: '4'},
-    {name: 'Testing Lab', id: '5'},
-  ]);
-  const accountType = route.params.accountType;
+  const {accountType, selectedCourses} = route.params;
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -31,12 +24,14 @@ const SelectedCoursesScreen = ({navigation, route}) => {
         </View>
         <View style={styles.headerMargin}>
           <Text style={[styles.light, styles.center]}>Total Courses</Text>
-          <Text style={[styles.white, styles.center]}>{courses.length}</Text>
+          <Text style={[styles.white, styles.center]}>
+            {selectedCourses.length}
+          </Text>
         </View>
       </View>
       <View style={styles.footer}>
         <FlatList
-          data={courses}
+          data={selectedCourses}
           keyExtractor={(item) => item.id}
           renderItem={({item}) => (
             <TouchableOpacity
