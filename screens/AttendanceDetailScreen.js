@@ -1,6 +1,17 @@
 import React, {useState} from 'react';
-import {View, StyleSheet, Image, TouchableOpacity, Text} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Text,
+  FlatList,
+  LayoutAnimation,
+} from 'react-native';
 import {Calendar} from 'react-native-calendars';
+import BluetoothModule from '../utils/BluetoothModule';
+import Student from '../components/Student';
+import AttendanceAdd from '../components/AttendanceAdd';
 
 const CalendarArrow = (props) => {
   return props.direction === 'left' ? (
@@ -50,7 +61,51 @@ const AttendanceDetailScreen = ({navigation, route}) => {
       },
     },
     markedDates: {},
+    addOverlay: false,
   });
+
+  const [students, updateStudents] = useState([
+    {
+      name: 'Nishkarsh Kwatra',
+      roll: '20216403217',
+      id: 'abgd3o26',
+    },
+    {
+      name: 'Mansi Sharma',
+      roll: '20116403217',
+      id: 'abgd3o27',
+    },
+    {
+      name: 'Omisha Sapra',
+      roll: '70116403217',
+      id: 'abgd3o28',
+    },
+    {
+      name: 'Sarthak Sadh',
+      roll: '41516403217',
+      id: 'abgd3o29',
+    },
+    {
+      name: 'Shradha Dua',
+      roll: '40216403217',
+      id: 'abgd3o22',
+    },
+  ]);
+
+  const removeListItem = (roll) => {
+    const newStudents = state.students.filter(
+      (student) => student.roll !== roll,
+    );
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
+    updateState({editing: state.editing, students: newStudents});
+  };
+
+  const closeAddOverlay = () => updateState({...state, addOverlay: false});
+
+  const addStudent = (name, roll) => {
+    updateStudents([...students, {name, roll}]);
+    closeAddOverlay();
+  };
 
   const updateMarkedDates = (month, year) => {
     if (month < 10) {
@@ -111,7 +166,21 @@ const AttendanceDetailScreen = ({navigation, route}) => {
                 index === 0 ? styles.firstTab : {},
                 index === tabOptions.length - 1 ? styles.lastTab : {},
               ]}
-              onPress={() => updateState({...state, selectedIndex: index})}
+              onPress={() => {
+                updateState({...state, selectedIndex: index});
+                if (index === tabOptions.length - 1) {
+                  let {accountType} = route.params;
+                  if (accountType === 'STUDENT') {
+                    BluetoothModule.askBluetoothPermission();
+                  } else {
+                    BluetoothModule.startDeviceScan()
+                      .then((devices) => {
+                        console.log(devices);
+                      })
+                      .catch((msg) => console.log(msg));
+                  }
+                }
+              }}
               key={index}>
               <Text
                 style={[
@@ -142,7 +211,39 @@ const AttendanceDetailScreen = ({navigation, route}) => {
             }
           }}
         />
-      ) : null}
+      ) : (
+        <>
+          <FlatList
+            data={students}
+            keyExtractor={(item) => item.roll}
+            renderItem={({item}) => (
+              <Student {...item} removeItem={removeListItem} />
+            )}
+            style={styles.studentList}
+          />
+          <View style={[styles.fabContainer, styles.row]}>
+            <TouchableOpacity
+              style={[styles.fab, styles.marginRight]}
+              onPress={() => updateState({...state, addOverlay: true})}>
+              <Image
+                source={require('../assets/images/plus.png')}
+                style={styles.plus}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.fab}
+              onPress={() => updateState({...state, editing: false})}>
+              <Image
+                source={require('../assets/images/save.png')}
+                style={styles.icon}
+              />
+            </TouchableOpacity>
+          </View>
+          {state.addOverlay ? (
+            <AttendanceAdd cancel={closeAddOverlay} save={addStudent} />
+          ) : null}
+        </>
+      )}
     </View>
   );
 };
@@ -213,6 +314,38 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 24,
     marginHorizontal: -15,
+  },
+  studentList: {
+    paddingHorizontal: 10,
+    marginTop: 40,
+    marginHorizontal: -24,
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: '2.5%',
+    right: '6.67%',
+  },
+  fab: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#1F1F1F',
+    zIndex: 1000,
+  },
+  icon: {
+    width: 25,
+    height: 25,
+    marginTop: 16,
+    marginLeft: 16,
+  },
+  plus: {
+    width: 21,
+    height: 21,
+    marginLeft: 20,
+    marginTop: 20,
+  },
+  marginRight: {
+    marginRight: 8,
   },
 });
 

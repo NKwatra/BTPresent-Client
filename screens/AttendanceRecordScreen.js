@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Image,
@@ -6,10 +6,9 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  Animated,
   LayoutAnimation,
 } from 'react-native';
-import {State, PanGestureHandler} from 'react-native-gesture-handler';
+import Student from '../components/Student';
 
 const monthsMap = {
   1: 'January',
@@ -24,63 +23,6 @@ const monthsMap = {
   10: 'October',
   11: 'November',
   12: 'December',
-};
-
-const threshold = 120;
-
-const Student = ({name, roll, removeItem}) => {
-  const xPos = useRef(new Animated.Value(0)).current;
-
-  return (
-    <PanGestureHandler
-      activeOffsetX={40}
-      onGestureEvent={Animated.event(
-        [
-          {
-            nativeEvent: {
-              translationX: xPos,
-            },
-          },
-        ],
-        {
-          useNativeDriver: false,
-          listener: (evt) => {
-            const translationX = evt.nativeEvent.translationX;
-            if (translationX >= threshold) {
-              removeItem(roll);
-            }
-          },
-        },
-      )}
-      onHandlerStateChange={(evt) => {
-        console.log('called', evt.nativeEvent.state);
-        const state = evt.nativeEvent.state;
-        const translation = evt.nativeEvent.translationX;
-        if (
-          (state === State.END || state === State.CANCELLED) &&
-          translation < threshold
-        ) {
-          Animated.spring(xPos, {
-            toValue: 0,
-          }).start();
-        }
-      }}>
-      <View style={styles.studentContainer}>
-        <View style={[styles.studentElement, styles.back]}>
-          <Text>DELETE</Text>
-        </View>
-        <Animated.View
-          style={[
-            styles.studentElement,
-            styles.front,
-            {transform: [{translateX: xPos}]},
-          ]}>
-          <Text style={styles.studentName}>{name}</Text>
-          <Text style={styles.studentRoll}>{roll}</Text>
-        </Animated.View>
-      </View>
-    </PanGestureHandler>
-  );
 };
 
 const AttendanceRecordScreen = ({navigation, route}) => {
@@ -266,40 +208,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginTop: 40,
     marginHorizontal: -24,
-  },
-  studentElement: {
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  front: {
-    backgroundColor: '#56706D',
-    zIndex: 2,
-  },
-  back: {
-    backgroundColor: 'red',
-  },
-  studentName: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontFamily: 'Montserrat-SemiBold',
-  },
-  studentRoll: {
-    color: '#FFFFFF',
-    marginTop: 6,
-    fontSize: 14,
-    fontFamily: 'Montserrat-Medium',
-  },
-  studentContainer: {
-    position: 'relative',
-    width: '100%',
-    height: 70,
-    marginVertical: 6,
   },
 });
 

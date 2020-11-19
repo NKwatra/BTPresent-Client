@@ -42,7 +42,8 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
     private Promise mPromise;
     private HashSet<String> mAvailableAddress;
     public static final int LOCATION_REQUEST_CODE = 100;
-    public static final int BLUETOOTH_REQUEST_CODE = 101;
+    public static final int BLUETOOTH_REQUEST_CODE_TEACHER = 101;
+    public static final int BLUETOOTH_REQUEST_CODE_STUDENT = 102;
 
 
     /*
@@ -83,7 +84,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
         @Override
         public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent intent)
         {
-            if(requestCode == BLUETOOTH_REQUEST_CODE)
+            if(requestCode == BLUETOOTH_REQUEST_CODE_TEACHER)
             {
                 if(resultCode == Activity.RESULT_OK)
                 {
@@ -94,6 +95,16 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
                     Toast.makeText(getReactApplicationContext(), "Failed to start bluetooth, please try again", Toast.LENGTH_LONG).show();
                     mPromise.reject("Bluetooth not started");
                 }
+            }else if(requestCode == BLUETOOTH_REQUEST_CODE_STUDENT)
+            {
+                if(resultCode == Activity.RESULT_OK)
+                {
+                    Toast.makeText(getReactApplicationContext(), "Bluetooth turned on", Toast.LENGTH_LONG).show();
+                }else
+                {
+                    Toast.makeText(getReactApplicationContext(), "Failed to start bluetooth, please try again", Toast.LENGTH_LONG).show();
+                    mPromise.reject("Bluetooth not started");
+                }  
             }
         }
     };
@@ -118,6 +129,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
                 WritableNativeArray array = new WritableNativeArray();
                 for(String entry : mAvailableAddress)
                     array.pushString(entry);
+                Toast.makeText(getReactApplicationContext(), "Extracting student names...", Toast.LENGTH_LONG).show();    
                 mPromise.resolve(array);
             }
         }
@@ -164,7 +176,7 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
     public void startScan()
     {
         boolean started = bluetoothAdapter.startDiscovery();
-        Toast.makeText(getReactApplicationContext(), "Scan started : "  + started, Toast.LENGTH_LONG).show();
+        Toast.makeText(getReactApplicationContext(), "Scanning nearby devices... ", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -214,16 +226,34 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
         else if(!bluetoothAdapter.isEnabled())
         {
             Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            currentActivity.startActivityForResult(intent, BLUETOOTH_REQUEST_CODE);
+            currentActivity.startActivityForResult(intent, BLUETOOTH_REQUEST_CODE_TEACHER);
         }else{
             startScan();
         }
     }
 
 
-    // method to turn on bluetooth,
-    // pre req: ask for location permission and permission to turn
-    // on bluetooth.
-    // @ReactMethod
+    /*
+        Method to ask permission to turn on bluetooth
+    */
+    @ReactMethod
+    public void askBluetoothPermission()
+    {
+        Activity currentActivity = getCurrentActivity();
+        final BluetoothManager bluetoothManager = (BluetoothManager)currentActivity.getSystemService(Context.BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
 
+        if(bluetoothAdapter == null)
+        {
+            Toast.makeText(getReactApplicationContext(), "Bluetooth is not supported on device", Toast.LENGTH_LONG).show();
+        }
+        else if(!bluetoothAdapter.isEnabled())
+        {
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            currentActivity.startActivityForResult(intent, BLUETOOTH_REQUEST_CODE_STUDENT);
+        }else
+        {
+            Toast.makeText(getReactApplicationContext(), "Bluetooth is already on", Toast.LENGTH_LONG).show();
+        }
+    }
 }
