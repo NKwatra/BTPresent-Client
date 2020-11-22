@@ -14,6 +14,9 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableNativeArray;
 
 import android.widget.Toast;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.net.NetworkInterface;
 import java.util.Collections;
@@ -52,29 +55,51 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
     @ReactMethod
     public void getMacAddress(Promise promise)
     {
-        try 
-        {
-            List <NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
-            for (NetworkInterface nif: all) {
-                if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
+        // try 
+        // {
+        //     List <NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
+        //     for (NetworkInterface nif: all) {
+        //         if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
     
-                byte[] macBytes = nif.getHardwareAddress();
-                if (macBytes == null) {
-                    promise.resolve("");
-                }
+        //         byte[] macBytes = nif.getHardwareAddress();
+        //         if (macBytes == null) {
+        //             promise.resolve("");
+        //         }
     
-                StringBuilder res1 = new StringBuilder();
-                for (byte b: macBytes) {
-                    res1.append(String.format("%02X:", b));
-                }
+        //         StringBuilder res1 = new StringBuilder();
+        //         for (byte b: macBytes) {
+        //             res1.append(String.format("%02X:", b));
+        //         }
     
-                if (res1.length() > 0) {
-                    res1.deleteCharAt(res1.length() - 1);
+        //         if (res1.length() > 0) {
+        //             res1.deleteCharAt(res1.length() - 1);
+        //         }
+        //         promise.resolve(res1.toString());
+        //     }
+        // } catch (Exception ex) {}
+        // promise.resolve("02:00:00:00:00:00");
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        String bluetoothMacAddress = "";
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){
+            try {
+                Field mServiceField = bluetoothAdapter.getClass().getDeclaredField("mService");
+                mServiceField.setAccessible(true);
+    
+                Object btManagerService = mServiceField.get(bluetoothAdapter);
+    
+                if (btManagerService != null) {
+                    bluetoothMacAddress = (String) btManagerService.getClass().getMethod("getAddress").invoke(btManagerService);
                 }
-                promise.resolve(res1.toString());
+            } catch (NoSuchFieldException e) {
+            } catch (NoSuchMethodException e) {
+            } catch (IllegalAccessException e) {
+            } catch (InvocationTargetException e) {
             }
-        } catch (Exception ex) {}
-        promise.resolve("02:00:00:00:00:00");
+        } else {
+            bluetoothMacAddress = bluetoothAdapter.getAddress();
+        }
+
+        promise.resolve(bluetoothMacAddress);
     }
 
     /* 
@@ -103,7 +128,6 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
                 }else
                 {
                     Toast.makeText(getReactApplicationContext(), "Failed to start bluetooth, please try again", Toast.LENGTH_LONG).show();
-                    mPromise.reject("Bluetooth not started");
                 }  
             }
         }
@@ -246,14 +270,19 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
         if(bluetoothAdapter == null)
         {
             Toast.makeText(getReactApplicationContext(), "Bluetooth is not supported on device", Toast.LENGTH_LONG).show();
-        }
-        else if(!bluetoothAdapter.isEnabled())
-        {
-            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            currentActivity.startActivityForResult(intent, BLUETOOTH_REQUEST_CODE_STUDENT);
         }else
         {
-            Toast.makeText(getReactApplicationContext(), "Bluetooth is already on", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+            intent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+            currentActivity.startActivityForResult(intent, BLUETOOTH_REQUEST_CODE_STUDENT);
         }
+        // else if(!bluetoothAdapter.isEnabled())
+        // {
+        //     Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        //     currentActivity.startActivityForResult(intent, BLUETOOTH_REQUEST_CODE_STUDENT);
+        // }else
+        // {
+        //     Toast.makeText(getReactApplicationContext(), "Bluetooth is already on", Toast.LENGTH_LONG).show();
+        // }
     }
 }

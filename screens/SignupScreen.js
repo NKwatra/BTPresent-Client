@@ -28,13 +28,17 @@ const SignupScreen = ({navigation, route}) => {
   });
 
   useEffect(() => {
-    getRegisteredUniversityNames().then((universities) =>
-      updateState((oldState) => ({
-        ...oldState,
-        universityOptions: universities,
-        loading: false,
-      })),
-    );
+    getRegisteredUniversityNames()
+      .then((universities) =>
+        updateState((oldState) => ({
+          ...oldState,
+          universityOptions: universities,
+          loading: false,
+        })),
+      )
+      .catch(() =>
+        alert('Please check your internet connection and try again!'),
+      );
   }, []);
 
   const accountType = route.params.accountType || 'STUDENT';

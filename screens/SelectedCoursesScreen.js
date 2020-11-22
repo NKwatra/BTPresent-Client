@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, StyleSheet, Image, Text, TouchableOpacity} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
+import {logout} from '../utils/Auth';
 
 const SelectedCoursesScreen = ({navigation, route}) => {
   const {accountType, selectedCourses} = route.params;
@@ -15,7 +16,7 @@ const SelectedCoursesScreen = ({navigation, route}) => {
             />
           </TouchableOpacity>
           <Text style={styles.white}>Course List</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('login')}>
+          <TouchableOpacity onPress={() => logout(navigation)}>
             <Image
               source={require('../assets/images/logout.png')}
               style={styles.logout}
@@ -40,6 +41,7 @@ const SelectedCoursesScreen = ({navigation, route}) => {
                 navigation.navigate('attendanceDetail', {
                   name: item.name,
                   accountType,
+                  id: item.id,
                 })
               }>
               <Text style={styles.courseName}>{item.name}</Text>

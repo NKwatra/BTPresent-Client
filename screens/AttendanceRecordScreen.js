@@ -9,6 +9,7 @@ import {
   LayoutAnimation,
 } from 'react-native';
 import Student from '../components/Student';
+import {logout} from '../utils/Auth';
 
 const monthsMap = {
   1: 'January',
@@ -81,7 +82,7 @@ const AttendanceRecordScreen = ({navigation, route}) => {
             style={styles.backArrow}
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('login')}>
+        <TouchableOpacity onPress={() => logout(navigation)}>
           <Image
             source={require('../assets/images/logout.png')}
             style={styles.logout}

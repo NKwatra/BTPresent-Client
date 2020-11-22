@@ -28,13 +28,17 @@ const LoginScreen = ({route, navigation}) => {
     /*
       get the names of all registred universities for dropdown
     */
-    getRegisteredUniversityNames().then((universities) =>
-      updateState((oldState) => ({
-        ...oldState,
-        universityOptions: universities,
-        loading: false,
-      })),
-    );
+    getRegisteredUniversityNames()
+      .then((universities) =>
+        updateState((oldState) => ({
+          ...oldState,
+          universityOptions: universities,
+          loading: false,
+        })),
+      )
+      .catch(() =>
+        alert('Please check your internet connection and try agian'),
+      );
   }, []);
 
   /*

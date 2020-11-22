@@ -12,6 +12,11 @@ import {Calendar} from 'react-native-calendars';
 import BluetoothModule from '../utils/BluetoothModule';
 import Student from '../components/Student';
 import AttendanceAdd from '../components/AttendanceAdd';
+import {logout} from '../utils/Auth';
+import {
+  extractStudentNames,
+  sendAttendanceToBackend,
+} from '../utils/attendance';
 
 const CalendarArrow = (props) => {
   return props.direction === 'left' ? (
@@ -46,6 +51,8 @@ const AttendanceDetailScreen = ({navigation, route}) => {
       ? ['Previous Record', 'Give Attendance']
       : ['Previous Record', 'Take Attendance'];
 
+  let univID;
+
   const [state, updateState] = useState({
     selectedIndex: 0,
     attendance: {
@@ -64,40 +71,35 @@ const AttendanceDetailScreen = ({navigation, route}) => {
     addOverlay: false,
   });
 
-  const [students, updateStudents] = useState([
-    {
-      name: 'Nishkarsh Kwatra',
-      roll: '20216403217',
-      id: 'abgd3o26',
-    },
-    {
-      name: 'Mansi Sharma',
-      roll: '20116403217',
-      id: 'abgd3o27',
-    },
-    {
-      name: 'Omisha Sapra',
-      roll: '70116403217',
-      id: 'abgd3o28',
-    },
-    {
-      name: 'Sarthak Sadh',
-      roll: '41516403217',
-      id: 'abgd3o29',
-    },
-    {
-      name: 'Shradha Dua',
-      roll: '40216403217',
-      id: 'abgd3o22',
-    },
-  ]);
+  const [students, updateStudents] = useState([]);
 
   const removeListItem = (roll) => {
-    const newStudents = state.students.filter(
-      (student) => student.roll !== roll,
-    );
+    const newStudents = students.filter((student) => student.roll !== roll);
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
-    updateState({editing: state.editing, students: newStudents});
+    updateStudents(newStudents);
+  };
+
+  const saveAttendance = () => {
+    if (univID === undefined) {
+      alert('Please perform a search first');
+    }
+    sendAttendanceToBackend(students, univID, route.params.id).then(
+      ({saved, error}) => {
+        if (error) {
+          alert('Session expired, please login again');
+          logout(navigation);
+          return;
+        }
+        if (saved) {
+          updateStudents([]);
+          alert('Attendance Recorded');
+        } else {
+          alert(
+            'There was some error in attendance recording, Please try again later',
+          );
+        }
+      },
+    );
   };
 
   const closeAddOverlay = () => updateState({...state, addOverlay: false});
@@ -139,13 +141,13 @@ const AttendanceDetailScreen = ({navigation, route}) => {
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <TouchableOpacity onPress={navigation.goBack}>
+        <TouchableOpacity>
           <Image
             source={require('../assets/images/back-arrow-white.png')}
             style={styles.backArrow}
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('login')}>
+        <TouchableOpacity onPress={() => logout(navigation)}>
           <Image
             source={require('../assets/images/logout.png')}
             style={styles.logout}
@@ -174,8 +176,15 @@ const AttendanceDetailScreen = ({navigation, route}) => {
                     BluetoothModule.askBluetoothPermission();
                   } else {
                     BluetoothModule.startDeviceScan()
-                      .then((devices) => {
-                        console.log(devices);
+                      .then((devices) => extractStudentNames(devices))
+                      .then(({universityID, studentPresent, error}) => {
+                        if (error === undefined) {
+                          updateStudents(studentPresent);
+                          univID = universityID;
+                        } else {
+                          alert('Session expired, please login again');
+                          navigation.navigate('login');
+                        }
                       })
                       .catch((msg) => console.log(msg));
                   }
@@ -232,7 +241,7 @@ const AttendanceDetailScreen = ({navigation, route}) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.fab}
-              onPress={() => updateState({...state, editing: false})}>
+              onPress={() => saveAttendance()}>
               <Image
                 source={require('../assets/images/save.png')}
                 style={styles.icon}

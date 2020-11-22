@@ -30,23 +30,27 @@ const HomeScreen = ({navigation}) => {
             check if user is still authenticated
           */
           const authStatePromise = isAuthenticated();
-          authStatePromise.then((authState) => {
-            /*
+          authStatePromise
+            .then((authState) => {
+              /*
               Still authenticated, display the courses of user
             */
-            if (authState) {
-              navigation.navigate('selectedCourses', {
-                selectedCourses: authState,
-                accountType,
-              });
-            } else {
-              /*
+              if (authState) {
+                navigation.navigate('selectedCourses', {
+                  selectedCourses: authState,
+                  accountType,
+                });
+              } else {
+                /*
                 Logged out or first time login, redirect to login page
               */
-              navigation.navigate('login', {accountType});
-            }
-            setLoading(false);
-          });
+                navigation.navigate('login', {accountType});
+              }
+              setLoading(false);
+            })
+            .catch(() =>
+              alert('Please check your internet connection and try again'),
+            );
         }
       });
     }, 300);

@@ -19,10 +19,14 @@ const CoursesScreen = ({navigation, route}) => {
   const [loading, updateLoading] = useState(true);
   const {university} = route.params;
   useEffect(() => {
-    getUniversityCourses(university).then((Courses) => {
-      updateCourses(Courses);
-      updateLoading(false);
-    });
+    getUniversityCourses(university)
+      .then((Courses) => {
+        updateCourses(Courses);
+        updateLoading(false);
+      })
+      .catch(() =>
+        alert('Please check your internet connection and try again'),
+      );
   }, [university]);
 
   return (

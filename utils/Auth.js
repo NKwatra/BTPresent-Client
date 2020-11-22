@@ -4,6 +4,9 @@ import {
   getUserCourses,
   setUserId,
   setUserCourses,
+  removeUserId,
+  removeUserCourses,
+  getAccountType,
 } from './AsyncStorage';
 
 /* Function to check if user is still authenticated */
@@ -114,4 +117,16 @@ export const signUp = (userData) => {
       Accept: 'application/json',
     },
   }).then((response) => response.json());
+};
+
+/*
+    Function to logout a user,
+    @param: navigation: Navigation object passed to screens
+*/
+export const logout = (navigation) => {
+  Promise.all([
+    removeUserId(),
+    removeUserCourses(),
+    getAccountType(),
+  ]).then((results) => navigation.navigate('login', {accountType: results[2]}));
 };

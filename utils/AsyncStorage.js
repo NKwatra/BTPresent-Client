@@ -47,3 +47,11 @@ export const setUserCredentials = ({userId, universityId}) => {
     .then((results) => results)
     .catch((err) => console.log(err));
 };
+
+export const removeUserId = () => {
+  return AsyncStorage.removeItem(USER_ID).catch(() => null);
+};
+
+export const removeUserCourses = () => {
+  return AsyncStorage.removeItem(USER_COURSES).catch(() => null);
+};

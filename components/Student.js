@@ -41,7 +41,7 @@ const Student = ({name, roll, removeItem}) => {
           }).start();
         }
       }}>
-      <View style={styles.studentContainer}>
+      <Animated.View style={styles.studentContainer}>
         <View style={[styles.studentElement, styles.back]}>
           <Image
             source={require('../assets/images/delete.png')}
@@ -57,7 +57,7 @@ const Student = ({name, roll, removeItem}) => {
           <Text style={styles.studentName}>{name}</Text>
           <Text style={styles.studentRoll}>{roll}</Text>
         </Animated.View>
-      </View>
+      </Animated.View>
     </PanGestureHandler>
   );
 };
