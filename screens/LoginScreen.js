@@ -59,28 +59,34 @@ const LoginScreen = ({route, navigation}) => {
         extract device MAC address and send it to server
         along with other credentials
       */
-      BluetoothModule.getMacAddress().then((address) => {
-        /*
+      BluetoothModule.getMacAddress()
+        .then((address) => {
+          console.log(address);
+          /*
           send to backend to validate credentials
         */
-        login({...state, address}).then((result) => {
-          /*
+          login({...state, address}).then((result) => {
+            console.log(result);
+            /*
             If correct credentials, move to selected courses page
             sending in data received from server
           */
-          if (result.navigate) {
-            navigation.navigate('selectedCourses', {
-              accountType,
-              selectedCourses: result.selectedCourses,
-            });
-          } else {
-            /*
+            if (result.navigate) {
+              navigation.navigate('selectedCourses', {
+                accountType,
+                selectedCourses: result.selectedCourses,
+              });
+            } else {
+              /*
               alert error message sent by server
             */
-            alert(result.message);
-          }
+              alert(result.message);
+            }
+          });
+        })
+        .catch((err) => {
+          console.log(err);
         });
-      });
     }
   };
 

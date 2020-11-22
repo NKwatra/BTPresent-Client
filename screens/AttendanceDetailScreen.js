@@ -222,34 +222,38 @@ const AttendanceDetailScreen = ({navigation, route}) => {
         />
       ) : (
         <>
-          <FlatList
-            data={students}
-            keyExtractor={(item) => item.roll}
-            renderItem={({item}) => (
-              <Student {...item} removeItem={removeListItem} />
-            )}
-            style={styles.studentList}
-          />
-          <View style={[styles.fabContainer, styles.row]}>
-            <TouchableOpacity
-              style={[styles.fab, styles.marginRight]}
-              onPress={() => updateState({...state, addOverlay: true})}>
-              <Image
-                source={require('../assets/images/plus.png')}
-                style={styles.plus}
+          {route.params.accountType === 'TEACHER' ? (
+            <>
+              <FlatList
+                data={students}
+                keyExtractor={(item) => item.roll}
+                renderItem={({item}) => (
+                  <Student {...item} removeItem={removeListItem} />
+                )}
+                style={styles.studentList}
               />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.fab}
-              onPress={() => saveAttendance()}>
-              <Image
-                source={require('../assets/images/save.png')}
-                style={styles.icon}
-              />
-            </TouchableOpacity>
-          </View>
-          {state.addOverlay ? (
-            <AttendanceAdd cancel={closeAddOverlay} save={addStudent} />
+              <View style={[styles.fabContainer, styles.row]}>
+                <TouchableOpacity
+                  style={[styles.fab, styles.marginRight]}
+                  onPress={() => updateState({...state, addOverlay: true})}>
+                  <Image
+                    source={require('../assets/images/plus.png')}
+                    style={styles.plus}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.fab}
+                  onPress={() => saveAttendance()}>
+                  <Image
+                    source={require('../assets/images/save.png')}
+                    style={styles.icon}
+                  />
+                </TouchableOpacity>
+              </View>
+              {state.addOverlay ? (
+                <AttendanceAdd cancel={closeAddOverlay} save={addStudent} />
+              ) : null}
+            </>
           ) : null}
         </>
       )}

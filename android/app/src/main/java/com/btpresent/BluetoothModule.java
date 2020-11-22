@@ -42,11 +42,14 @@ import android.content.IntentFilter;
 public class BluetoothModule extends ReactContextBaseJavaModule implements PermissionListener, LifecycleEventListener{
     private static ReactApplicationContext reactContext;
     private BluetoothAdapter bluetoothAdapter;
+    private BluetoothAdapter adapter;
     private Promise mPromise;
+    private Promise mAddressPromise;
     private HashSet<String> mAvailableAddress;
     public static final int LOCATION_REQUEST_CODE = 100;
     public static final int BLUETOOTH_REQUEST_CODE_TEACHER = 101;
     public static final int BLUETOOTH_REQUEST_CODE_STUDENT = 102;
+    public static final int BLUETOOTH_REQUEST_CODE_ADDRESS = 103;
 
 
     /*
@@ -55,37 +58,30 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
     @ReactMethod
     public void getMacAddress(Promise promise)
     {
-        // try 
-        // {
-        //     List <NetworkInterface> all = Collections.list(NetworkInterface.getNetworkInterfaces());
-        //     for (NetworkInterface nif: all) {
-        //         if (!nif.getName().equalsIgnoreCase("wlan0")) continue;
-    
-        //         byte[] macBytes = nif.getHardwareAddress();
-        //         if (macBytes == null) {
-        //             promise.resolve("");
-        //         }
-    
-        //         StringBuilder res1 = new StringBuilder();
-        //         for (byte b: macBytes) {
-        //             res1.append(String.format("%02X:", b));
-        //         }
-    
-        //         if (res1.length() > 0) {
-        //             res1.deleteCharAt(res1.length() - 1);
-        //         }
-        //         promise.resolve(res1.toString());
-        //     }
-        // } catch (Exception ex) {}
-        // promise.resolve("02:00:00:00:00:00");
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        adapter = BluetoothAdapter.getDefaultAdapter();
+        mAddressPromise = promise;
+        if(adapter == null)
+        {
+            Toast.makeText(getReactApplicationContext(), "Bluetooth is not supported on device", Toast.LENGTH_LONG).show();
+            mAddressPromise.reject("no bluetooth support");
+        }else if(!adapter.isEnabled())
+        {
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            getCurrentActivity().startActivityForResult(intent, BLUETOOTH_REQUEST_CODE_ADDRESS);
+        }else
+        {
+            extractAddress();
+        }
+    }
+
+    private void extractAddress() {
         String bluetoothMacAddress = "";
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){
             try {
-                Field mServiceField = bluetoothAdapter.getClass().getDeclaredField("mService");
+                Field mServiceField = adapter.getClass().getDeclaredField("mService");
                 mServiceField.setAccessible(true);
     
-                Object btManagerService = mServiceField.get(bluetoothAdapter);
+                Object btManagerService = mServiceField.get(adapter);
     
                 if (btManagerService != null) {
                     bluetoothMacAddress = (String) btManagerService.getClass().getMethod("getAddress").invoke(btManagerService);
@@ -96,12 +92,12 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
             } catch (InvocationTargetException e) {
             }
         } else {
-            bluetoothMacAddress = bluetoothAdapter.getAddress();
+            bluetoothMacAddress = adapter.getAddress();
         }
 
-        promise.resolve(bluetoothMacAddress);
+         adapter.disable();
+        mAddressPromise.resolve(bluetoothMacAddress);
     }
-
     /* 
         Create a listener for listening to activity results
     */
@@ -122,13 +118,22 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
                 }
             }else if(requestCode == BLUETOOTH_REQUEST_CODE_STUDENT)
             {
+                if(resultCode == Activity.RESULT_CANCELED)
+                {
+                    Toast.makeText(getReactApplicationContext(), "Please allow bluetooth to give attendance", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(getReactApplicationContext(), "Bluetooth turned on", Toast.LENGTH_LONG).show();
+                }  
+            }else if(requestCode == BLUETOOTH_REQUEST_CODE_ADDRESS)
+            {
                 if(resultCode == Activity.RESULT_OK)
                 {
-                    Toast.makeText(getReactApplicationContext(), "Bluetooth turned on", Toast.LENGTH_LONG).show();
+                    extractAddress();
                 }else
                 {
-                    Toast.makeText(getReactApplicationContext(), "Failed to start bluetooth, please try again", Toast.LENGTH_LONG).show();
-                }  
+                    Toast.makeText(getReactApplicationContext(), "Cannot login without bluetooth on", Toast.LENGTH_LONG).show();
+                    mAddressPromise.reject("bluetooth denied");
+                }
             }
         }
     };
@@ -148,12 +153,15 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
                 String address = device.getAddress();
                 mAvailableAddress.add(address);
             }else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
-            { 
+            {
+                // function called when bluetooth is tutned on during login and every time the bleutooth is turned off
+                if(mPromise == null)
+                    return;
                 // pass discovered address to javascript 
                 WritableNativeArray array = new WritableNativeArray();
                 for(String entry : mAvailableAddress)
                     array.pushString(entry);
-                Toast.makeText(getReactApplicationContext(), "Extracting student names...", Toast.LENGTH_LONG).show();    
+                Toast.makeText(getReactApplicationContext(), "Extracting student names...", Toast.LENGTH_LONG).show();
                 mPromise.resolve(array);
             }
         }
