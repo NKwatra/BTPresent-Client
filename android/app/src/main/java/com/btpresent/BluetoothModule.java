@@ -155,12 +155,13 @@ public class BluetoothModule extends ReactContextBaseJavaModule implements Permi
             }else if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
             {
                 // function called when bluetooth is tutned on during login and every time the bleutooth is turned off
-                if(mPromise == null)
+                if(mPromise == null || mAvailableAddress == null || mAvailableAddress.size() == 0)
                     return;
                 // pass discovered address to javascript 
                 WritableNativeArray array = new WritableNativeArray();
                 for(String entry : mAvailableAddress)
                     array.pushString(entry);
+                mAvailableAddress.clear();    
                 Toast.makeText(getReactApplicationContext(), "Extracting student names...", Toast.LENGTH_LONG).show();
                 mPromise.resolve(array);
             }

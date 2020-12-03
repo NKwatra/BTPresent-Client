@@ -37,7 +37,7 @@ const LoginScreen = ({route, navigation}) => {
         })),
       )
       .catch(() =>
-        alert('Please check your internet connection and try agian'),
+        alert('Please check your internet connection and try again'),
       );
   }, []);
 

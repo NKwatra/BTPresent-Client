@@ -42,3 +42,16 @@ export const sendAttendanceToBackend = (students, univID, courseID) => {
     });
   });
 };
+
+export const getAttendanceRecord = (courseID, accountType) => {
+  const url = `${Config.API_URL}/info/attendance?courseID=${courseID}&accountType=${accountType}`;
+  return getUserId().then((token) => {
+    return fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((attendanceRecord) => attendanceRecord);
+  });
+};

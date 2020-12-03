@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -15,8 +15,10 @@ import AttendanceAdd from '../components/AttendanceAdd';
 import {logout} from '../utils/Auth';
 import {
   extractStudentNames,
+  getAttendanceRecord,
   sendAttendanceToBackend,
 } from '../utils/attendance';
+import {PacmanIndicator} from 'react-native-indicators';
 
 const CalendarArrow = (props) => {
   return props.direction === 'left' ? (
@@ -45,6 +47,38 @@ const calendarTheme = {
   textDayHeaderFontSize: 10,
 };
 
+const getMarkedDates = (month, year, attendance) => {
+  if (month < 10) {
+    month = '0' + month;
+  }
+  let tempDates = {};
+  if (
+    !attendance.hasOwnProperty(year) ||
+    !attendance[year].hasOwnProperty(month)
+  ) {
+    return {};
+  }
+
+  const {present, absent} = attendance[year][month];
+  for (let date of present) {
+    if (date < 10) {
+      date = '0' + date;
+    }
+    const dateString = year + '-' + month + '-' + date;
+    tempDates[dateString] = {selected: true, selectedColor: '#87C289'};
+  }
+
+  for (let date of absent) {
+    if (date < 10) {
+      date = '0' + date;
+    }
+    const dateString = year + '-' + month + '-' + date;
+    tempDates[dateString] = {selected: true, selectedColor: '#ED7479'};
+  }
+
+  return tempDates;
+};
+
 const AttendanceDetailScreen = ({navigation, route}) => {
   const tabOptions =
     route.params.accountType === 'STUDENT'
@@ -55,23 +89,29 @@ const AttendanceDetailScreen = ({navigation, route}) => {
 
   const [state, updateState] = useState({
     selectedIndex: 0,
-    attendance: {
-      2020: {
-        11: {
-          present: [15, 17, 21, 20, 12],
-          absent: [10, 13],
-        },
-        12: {
-          present: [1, 20, 31, 12, 15],
-          absent: [4, 9],
-        },
-      },
-    },
+    attendance: {},
     markedDates: {},
     addOverlay: false,
   });
 
   const [students, updateStudents] = useState([]);
+
+  const [loading, updateLoading] = useState(true);
+
+  useEffect(() => {
+    getAttendanceRecord(route.params.id, route.params.accountType).then(
+      (record) => {
+        const today = new Date();
+        const markedDates = getMarkedDates(
+          today.getMonth() + 1,
+          today.getFullYear(),
+          record,
+        );
+        updateState({...state, attendance: record, markedDates});
+        updateLoading(false);
+      },
+    );
+  }, [route.params.id, route.params.accountType, getMarkedDates]);
 
   const removeListItem = (roll) => {
     const newStudents = students.filter((student) => student.roll !== roll);
@@ -109,152 +149,138 @@ const AttendanceDetailScreen = ({navigation, route}) => {
     closeAddOverlay();
   };
 
-  const updateMarkedDates = (month, year) => {
-    if (month < 10) {
-      month = '0' + month;
-    }
-    let tempDates = {};
-    if (
-      !state.attendance.hasOwnProperty(year) ||
-      !state.attendance[year].hasOwnProperty(month)
-    ) {
-      return;
-    }
-
-    const {present, absent} = state.attendance[year][month];
-    for (let date of present) {
-      if (date < 10) {
-        date = '0' + date;
-      }
-      const dateString = year + '-' + month + '-' + date;
-      tempDates[dateString] = {selected: true, selectedColor: '#87C289'};
-    }
-
-    for (let date of absent) {
-      const dateString = year + '-' + month + '-' + date;
-      tempDates[dateString] = {selected: true, selectedColor: '#ED7479'};
-    }
-
-    updateState({...state, markedDates: tempDates});
-  };
-
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <TouchableOpacity>
-          <Image
-            source={require('../assets/images/back-arrow-white.png')}
-            style={styles.backArrow}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => logout(navigation)}>
-          <Image
-            source={require('../assets/images/logout.png')}
-            style={styles.logout}
-          />
-        </TouchableOpacity>
-      </View>
-      <View>
-        <Text style={styles.courseName}>{route.params.name}</Text>
-      </View>
-
-      <View style={styles.tabsContainer}>
-        {tabOptions.map((option, index) => {
-          return (
-            <TouchableOpacity
-              style={[
-                styles.tab,
-                index === state.selectedIndex ? styles.selected : {},
-                index === 0 ? styles.firstTab : {},
-                index === tabOptions.length - 1 ? styles.lastTab : {},
-              ]}
-              onPress={() => {
-                updateState({...state, selectedIndex: index});
-                if (index === tabOptions.length - 1) {
-                  let {accountType} = route.params;
-                  if (accountType === 'STUDENT') {
-                    BluetoothModule.askBluetoothPermission();
-                  } else {
-                    BluetoothModule.startDeviceScan()
-                      .then((devices) => extractStudentNames(devices))
-                      .then(({universityID, studentPresent, error}) => {
-                        if (error === undefined) {
-                          updateStudents(studentPresent);
-                          univID = universityID;
-                        } else {
-                          alert('Session expired, please login again');
-                          navigation.navigate('login');
-                        }
-                      })
-                      .catch((msg) => console.log(msg));
-                  }
-                }
-              }}
-              key={index}>
-              <Text
-                style={[
-                  styles.tabHeader,
-                  index === state.selectedIndex ? styles.selectedText : {},
-                ]}>
-                {option}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-      {state.selectedIndex === 0 ? (
-        <Calendar
-          onMonthChange={({month, year}) => updateMarkedDates(month, year)}
-          renderArrow={(direction) => <CalendarArrow direction={direction} />}
-          enableSwipeMonths={true}
-          theme={calendarTheme}
-          style={styles.calendarContainer}
-          markedDates={state.markedDates}
-          onDayPress={(date) => {
-            if (route.params.accountType === 'TEACHER') {
-              navigation.navigate('attendanceRecord', {
-                accountType: route.params.accountType,
-                date,
-                name: route.params.name,
-              });
-            }
-          }}
-        />
+      {loading ? (
+        <PacmanIndicator color="#EACDA3" size={200} />
       ) : (
         <>
-          {route.params.accountType === 'TEACHER' ? (
-            <>
-              <FlatList
-                data={students}
-                keyExtractor={(item) => item.roll}
-                renderItem={({item}) => (
-                  <Student {...item} removeItem={removeListItem} />
-                )}
-                style={styles.studentList}
+          <View style={styles.row}>
+            <TouchableOpacity>
+              <Image
+                source={require('../assets/images/back-arrow-white.png')}
+                style={styles.backArrow}
               />
-              <View style={[styles.fabContainer, styles.row]}>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => logout(navigation)}>
+              <Image
+                source={require('../assets/images/logout.png')}
+                style={styles.logout}
+              />
+            </TouchableOpacity>
+          </View>
+          <View>
+            <Text style={styles.courseName}>{route.params.name}</Text>
+          </View>
+
+          <View style={styles.tabsContainer}>
+            {tabOptions.map((option, index) => {
+              return (
                 <TouchableOpacity
-                  style={[styles.fab, styles.marginRight]}
-                  onPress={() => updateState({...state, addOverlay: true})}>
-                  <Image
-                    source={require('../assets/images/plus.png')}
-                    style={styles.plus}
-                  />
+                  style={[
+                    styles.tab,
+                    index === state.selectedIndex ? styles.selected : {},
+                    index === 0 ? styles.firstTab : {},
+                    index === tabOptions.length - 1 ? styles.lastTab : {},
+                  ]}
+                  onPress={() => {
+                    updateState({...state, selectedIndex: index});
+                    if (index === tabOptions.length - 1) {
+                      let {accountType} = route.params;
+                      if (accountType === 'STUDENT') {
+                        BluetoothModule.askBluetoothPermission();
+                      } else {
+                        BluetoothModule.startDeviceScan()
+                          .then((devices) => extractStudentNames(devices))
+                          .then(({universityID, studentPresent, error}) => {
+                            if (error === undefined) {
+                              updateStudents(studentPresent);
+                              univID = universityID;
+                            } else {
+                              alert('Session expired, please login again');
+                              navigation.navigate('login');
+                            }
+                          })
+                          .catch((msg) => console.log(msg));
+                      }
+                    }
+                  }}
+                  key={index}>
+                  <Text
+                    style={[
+                      styles.tabHeader,
+                      index === state.selectedIndex ? styles.selectedText : {},
+                    ]}>
+                    {option}
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.fab}
-                  onPress={() => saveAttendance()}>
-                  <Image
-                    source={require('../assets/images/save.png')}
-                    style={styles.icon}
+              );
+            })}
+          </View>
+          {state.selectedIndex === 0 ? (
+            <Calendar
+              onMonthChange={({month, year}) => {
+                const markedDates = getMarkedDates(
+                  month,
+                  year,
+                  state.attendance,
+                );
+                updateState({...state, markedDates});
+              }}
+              renderArrow={(direction) => (
+                <CalendarArrow direction={direction} />
+              )}
+              enableSwipeMonths={true}
+              theme={calendarTheme}
+              style={styles.calendarContainer}
+              markedDates={state.markedDates}
+              onDayPress={(date) => {
+                if (route.params.accountType === 'TEACHER') {
+                  navigation.navigate('attendanceRecord', {
+                    accountType: route.params.accountType,
+                    date,
+                    name: route.params.name,
+                  });
+                }
+              }}
+            />
+          ) : (
+            <>
+              {route.params.accountType === 'TEACHER' ? (
+                <>
+                  <FlatList
+                    data={students}
+                    keyExtractor={(item) => item.roll}
+                    renderItem={({item}) => (
+                      <Student {...item} removeItem={removeListItem} />
+                    )}
+                    style={styles.studentList}
                   />
-                </TouchableOpacity>
-              </View>
-              {state.addOverlay ? (
-                <AttendanceAdd cancel={closeAddOverlay} save={addStudent} />
+                  <View style={[styles.fabContainer, styles.row]}>
+                    <TouchableOpacity
+                      style={[styles.fab, styles.marginRight]}
+                      onPress={() => updateState({...state, addOverlay: true})}>
+                      <Image
+                        source={require('../assets/images/plus.png')}
+                        style={styles.plus}
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.fab}
+                      onPress={() => saveAttendance()}>
+                      <Image
+                        source={require('../assets/images/save.png')}
+                        style={styles.icon}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  {state.addOverlay ? (
+                    <AttendanceAdd cancel={closeAddOverlay} save={addStudent} />
+                  ) : null}
+                </>
               ) : null}
             </>
-          ) : null}
+          )}
         </>
       )}
     </View>
