@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Image,
@@ -8,8 +8,11 @@ import {
   FlatList,
   LayoutAnimation,
 } from 'react-native';
+import {PacmanIndicator} from 'react-native-indicators';
 import Student from '../components/Student';
 import {logout} from '../utils/Auth';
+import {getAttendanceForDay, updateAttendanceForDay} from '../utils/attendance';
+import AttendanceAdd from '../components/AttendanceAdd';
 
 const monthsMap = {
   1: 'January',
@@ -28,34 +31,22 @@ const monthsMap = {
 
 const AttendanceRecordScreen = ({navigation, route}) => {
   const [state, updateState] = useState({
-    students: [
-      {
-        name: 'Mansi Sharma',
-        roll: '20116403217',
-      },
-      {
-        name: 'Nishkarsh Kwatra',
-        roll: '20216403217',
-      },
-      {
-        name: 'Shradha Dua',
-        roll: '40216403217',
-      },
-      {
-        name: 'Omisha Sapra',
-        roll: '70116403217',
-      },
-      {
-        name: 'Sarthak Sadh',
-        roll: '41516403217',
-      },
-      {
-        name: 'Rajat Cambo',
-        roll: '65716403217',
-      },
-    ],
+    students: [],
     editing: false,
   });
+
+  const [loading, setLoading] = useState(true);
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  useEffect(() => {
+    const {id, date} = route.params;
+    getAttendanceForDay(id, date.day, date.month, date.year).then(
+      (attendance) => {
+        updateState((prevState) => ({...prevState, students: attendance}));
+        setLoading(false);
+      },
+    );
+  }, [route.params]);
 
   const removeListItem = (roll) => {
     const newStudents = state.students.filter(
@@ -63,6 +54,14 @@ const AttendanceRecordScreen = ({navigation, route}) => {
     );
     LayoutAnimation.configureNext(LayoutAnimation.Presets.spring);
     updateState({editing: state.editing, students: newStudents});
+  };
+
+  const addListItem = (name, roll) => {
+    updateState((prevState) => ({
+      ...prevState,
+      students: [...prevState.students, {name, roll}],
+    }));
+    setShowOverlay(false);
   };
 
   const formatDate = ({day, month, year}) => {
@@ -75,62 +74,104 @@ const AttendanceRecordScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <TouchableOpacity onPress={navigation.goBack}>
-          <Image
-            source={require('../assets/images/back-arrow-white.png')}
-            style={styles.backArrow}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => logout(navigation)}>
-          <Image
-            source={require('../assets/images/logout.png')}
-            style={styles.logout}
-          />
-        </TouchableOpacity>
-      </View>
-      <View>
-        <Text style={styles.courseName}>{formatDate(route.params.date)}</Text>
-        <Text style={styles.attendance}>Total Attendance</Text>
-        <Text style={styles.attendanceCount}>{state.students.length}</Text>
-      </View>
-      {!state.editing ? (
-        <View style={styles.fabContainer}>
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => updateState({...state, editing: true})}>
-            <Image
-              source={require('../assets/images/edit.png')}
-              style={styles.icon}
-            />
-          </TouchableOpacity>
-        </View>
+      {loading ? (
+        <PacmanIndicator color="#EACDA3" size={200} />
       ) : (
-        <View style={[styles.fabContainer, styles.row]}>
-          <TouchableOpacity style={[styles.fab, styles.marginRight]}>
-            <Image
-              source={require('../assets/images/plus.png')}
-              style={styles.plus}
+        <>
+          <View style={styles.row}>
+            <TouchableOpacity onPress={navigation.goBack}>
+              <Image
+                source={require('../assets/images/back-arrow-white.png')}
+                style={styles.backArrow}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => logout(navigation)}>
+              <Image
+                source={require('../assets/images/logout.png')}
+                style={styles.logout}
+              />
+            </TouchableOpacity>
+          </View>
+          <View>
+            <Text style={styles.courseName}>
+              {formatDate(route.params.date)}
+            </Text>
+            <Text style={styles.attendance}>Total Attendance</Text>
+            <Text style={styles.attendanceCount}>{state.students.length}</Text>
+          </View>
+          {showOverlay ? (
+            <AttendanceAdd
+              cancel={() => setShowOverlay(false)}
+              save={addListItem}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => updateState({...state, editing: false})}>
-            <Image
-              source={require('../assets/images/tick-white.png')}
-              style={styles.icon}
-            />
-          </TouchableOpacity>
-        </View>
+          ) : null}
+          {!state.editing ? (
+            <View style={styles.fabContainer}>
+              <TouchableOpacity
+                style={styles.fab}
+                onPress={() => updateState({...state, editing: true})}>
+                <Image
+                  source={require('../assets/images/edit.png')}
+                  style={styles.icon}
+                />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={[styles.fabContainer, styles.row]}>
+              <TouchableOpacity
+                style={[styles.fab, styles.marginRight]}
+                onPress={() => setShowOverlay(true)}>
+                <Image
+                  source={require('../assets/images/plus.png')}
+                  style={styles.plus}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.fab}
+                onPress={() => {
+                  updateState({...state, editing: false});
+                  const studentIdList = state.students
+                    .filter((student) => student.id !== undefined)
+                    .map((student) => student.id);
+                  const studentRollList = state.students
+                    .filter((student) => student.id === undefined)
+                    .map((student) => student.roll);
+                  const {day, month, year} = route.params.date;
+                  updateAttendanceForDay(
+                    studentIdList,
+                    studentRollList,
+                    route.params.id,
+                    year,
+                    month,
+                    day,
+                  ).then((resp) => {
+                    if (typeof resp === 'object') {
+                      alert(
+                        'There was error in saving attedance, please try again',
+                      );
+                      updateState({...state, editing: true});
+                    } else {
+                      alert('Attedance saved');
+                    }
+                  });
+                }}>
+                <Image
+                  source={require('../assets/images/tick-white.png')}
+                  style={styles.icon}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+          <FlatList
+            data={state.students}
+            keyExtractor={(item) => item.roll}
+            renderItem={({item}) => (
+              <Student {...item} removeItem={removeListItem} />
+            )}
+            style={styles.studentList}
+          />
+        </>
       )}
-      <FlatList
-        data={state.students}
-        keyExtractor={(item) => item.roll}
-        renderItem={({item}) => (
-          <Student {...item} removeItem={removeListItem} />
-        )}
-        style={styles.studentList}
-      />
     </View>
   );
 };

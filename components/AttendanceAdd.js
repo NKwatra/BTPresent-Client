@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 18,
     bottom: '15%',
+    zIndex: 1000,
   },
   container: {
     width: Dimensions.get('window').width - 46,

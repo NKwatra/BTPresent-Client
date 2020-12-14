@@ -19,6 +19,7 @@ import {
   sendAttendanceToBackend,
 } from '../utils/attendance';
 import {PacmanIndicator} from 'react-native-indicators';
+import {abs} from 'react-native-reanimated';
 
 const CalendarArrow = (props) => {
   return props.direction === 'left' ? (
@@ -60,20 +61,24 @@ const getMarkedDates = (month, year, attendance) => {
   }
 
   const {present, absent} = attendance[year][month];
-  for (let date of present) {
-    if (date < 10) {
-      date = '0' + date;
+  if (present) {
+    for (let date of present) {
+      if (date < 10) {
+        date = '0' + date;
+      }
+      const dateString = year + '-' + month + '-' + date;
+      tempDates[dateString] = {selected: true, selectedColor: '#87C289'};
     }
-    const dateString = year + '-' + month + '-' + date;
-    tempDates[dateString] = {selected: true, selectedColor: '#87C289'};
   }
 
-  for (let date of absent) {
-    if (date < 10) {
-      date = '0' + date;
+  if (absent) {
+    for (let date of absent) {
+      if (date < 10) {
+        date = '0' + date;
+      }
+      const dateString = year + '-' + month + '-' + date;
+      tempDates[dateString] = {selected: true, selectedColor: '#ED7479'};
     }
-    const dateString = year + '-' + month + '-' + date;
-    tempDates[dateString] = {selected: true, selectedColor: '#ED7479'};
   }
 
   return tempDates;
@@ -107,11 +112,15 @@ const AttendanceDetailScreen = ({navigation, route}) => {
           today.getFullYear(),
           record,
         );
-        updateState({...state, attendance: record, markedDates});
+        updateState((currentState) => ({
+          ...currentState,
+          attendance: record,
+          markedDates,
+        }));
         updateLoading(false);
       },
     );
-  }, [route.params.id, route.params.accountType, getMarkedDates]);
+  }, [route.params.id, route.params.accountType]);
 
   const removeListItem = (roll) => {
     const newStudents = students.filter((student) => student.roll !== roll);
@@ -237,7 +246,7 @@ const AttendanceDetailScreen = ({navigation, route}) => {
               onDayPress={(date) => {
                 if (route.params.accountType === 'TEACHER') {
                   navigation.navigate('attendanceRecord', {
-                    accountType: route.params.accountType,
+                    id: route.params.id,
                     date,
                     name: route.params.name,
                   });
