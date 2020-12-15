@@ -1,12 +1,12 @@
 import React from 'react';
 import {TouchableOpacity, Image, StyleSheet} from 'react-native';
 
-const BackArrow = ({goBack}) => {
+const BackArrow = ({goBack, active}) => {
   return (
-    <TouchableOpacity onPress={goBack}>
+    <TouchableOpacity onPress={() => (active ? goBack() : null)}>
       <Image
         source={require('../assets/images/back-arrow.png')}
-        style={styles.backArrow}
+        style={active ? styles.backArrow : [styles.backArrow, styles.inactive]}
       />
     </TouchableOpacity>
   );
@@ -18,6 +18,9 @@ const styles = StyleSheet.create({
     height: 21,
     marginLeft: 24,
     marginTop: 40,
+  },
+  inactive: {
+    opacity: 0.2,
   },
 });
 

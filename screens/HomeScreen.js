@@ -6,6 +6,7 @@ import AccountType from '../components/AccountType';
 import {getAccountType, setAccountType} from '../utils/AsyncStorage';
 import {isAuthenticated} from '../utils/Auth';
 import {PacmanIndicator} from 'react-native-indicators';
+import {resetState} from '../utils/Common';
 
 const HomeScreen = ({navigation}) => {
   /*
@@ -36,15 +37,38 @@ const HomeScreen = ({navigation}) => {
               Still authenticated, display the courses of user
             */
               if (authState) {
-                navigation.navigate('selectedCourses', {
-                  selectedCourses: authState,
-                  accountType,
-                });
+                const navigationState = {
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'selectedCourses',
+                      params: {
+                        selectedCourses: authState,
+                        accountType,
+                      },
+                    },
+                  ],
+                };
+                resetState(navigation, navigationState);
               } else {
                 /*
                 Logged out or first time login, redirect to login page
+                and reset state
               */
-                navigation.navigate('login', {accountType});
+                const navigationState = {
+                  index: 0,
+                  routes: [
+                    {
+                      name: 'login',
+                      params: {
+                        accountType,
+                        backButton: false,
+                      },
+                    },
+                  ],
+                };
+
+                resetState(navigation, navigationState);
               }
               setLoading(false);
             })

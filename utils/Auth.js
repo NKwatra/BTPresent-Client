@@ -8,6 +8,7 @@ import {
   removeUserCourses,
   getAccountType,
 } from './AsyncStorage';
+import {resetState} from './Common';
 
 /* Function to check if user is still authenticated */
 export const isAuthenticated = () => {
@@ -124,9 +125,19 @@ export const signUp = (userData) => {
     @param: navigation: Navigation object passed to screens
 */
 export const logout = (navigation) => {
-  Promise.all([
-    removeUserId(),
-    removeUserCourses(),
-    getAccountType(),
-  ]).then((results) => navigation.navigate('login', {accountType: results[2]}));
+  Promise.all([removeUserId(), removeUserCourses(), getAccountType()]).then(
+    (results) => {
+      resetState(navigation, {
+        index: 0,
+        routes: [
+          {
+            name: 'login',
+            params: {
+              accountType: results[2],
+            },
+          },
+        ],
+      });
+    },
+  );
 };

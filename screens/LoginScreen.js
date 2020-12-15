@@ -96,7 +96,10 @@ const LoginScreen = ({route, navigation}) => {
         <PacmanIndicator color="#EACDA3" size={200} />
       ) : (
         <ScrollView>
-          <BackArrow goBack={navigation.goBack} />
+          <BackArrow
+            goBack={navigation.goBack}
+            active={route.params.backButton}
+          />
           <Text style={styles.welcome}>Welcome Back</Text>
           <FormInput
             first
