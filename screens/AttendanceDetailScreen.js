@@ -20,6 +20,7 @@ import {
 } from '../utils/attendance';
 import {PacmanIndicator} from 'react-native-indicators';
 import {abs} from 'react-native-reanimated';
+import BackArrow from '../components/BackArrow';
 
 const CalendarArrow = (props) => {
   return props.direction === 'left' ? (
@@ -165,12 +166,10 @@ const AttendanceDetailScreen = ({navigation, route}) => {
       ) : (
         <>
           <View style={styles.row}>
-            <TouchableOpacity>
-              <Image
-                source={require('../assets/images/back-arrow-white.png')}
-                style={styles.backArrow}
-              />
-            </TouchableOpacity>
+            <BackArrow
+              goBack={navigation.goBack}
+              propsStyles={styles.backArrow}
+            />
             <TouchableOpacity onPress={() => logout(navigation)}>
               <Image
                 source={require('../assets/images/logout.png')}
@@ -257,6 +256,7 @@ const AttendanceDetailScreen = ({navigation, route}) => {
             <>
               {route.params.accountType === 'TEACHER' ? (
                 <>
+                  <Text style={styles.count}>{students.length}</Text>
                   <FlatList
                     data={students}
                     keyExtractor={(item) => item.roll}
@@ -311,6 +311,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 21,
     marginTop: 4,
+    marginLeft: 4,
   },
   logout: {
     width: 21,
@@ -394,6 +395,13 @@ const styles = StyleSheet.create({
   },
   marginRight: {
     marginRight: 8,
+  },
+  count: {
+    fontSize: 20,
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
+    color: '#FFFFFF',
+    marginVertical: 8,
   },
 });
 

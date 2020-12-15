@@ -13,6 +13,7 @@ import Student from '../components/Student';
 import {logout} from '../utils/Auth';
 import {getAttendanceForDay, updateAttendanceForDay} from '../utils/attendance';
 import AttendanceAdd from '../components/AttendanceAdd';
+import BackArrow from '../components/BackArrow';
 
 const monthsMap = {
   1: 'January',
@@ -79,12 +80,10 @@ const AttendanceRecordScreen = ({navigation, route}) => {
       ) : (
         <>
           <View style={styles.row}>
-            <TouchableOpacity onPress={navigation.goBack}>
-              <Image
-                source={require('../assets/images/back-arrow-white.png')}
-                style={styles.backArrow}
-              />
-            </TouchableOpacity>
+            <BackArrow
+              goBack={navigation.goBack}
+              propsStyles={styles.backArrow}
+            />
             <TouchableOpacity onPress={() => logout(navigation)}>
               <Image
                 source={require('../assets/images/logout.png')}
@@ -192,6 +191,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 21,
     marginTop: 4,
+    marginLeft: 4,
   },
   logout: {
     width: 21,

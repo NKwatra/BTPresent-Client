@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, StyleSheet, Image, Text, TouchableOpacity} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
+import BackArrow from '../components/BackArrow';
 import {logout} from '../utils/Auth';
 
 const SelectedCoursesScreen = ({navigation, route}) => {
@@ -9,12 +10,17 @@ const SelectedCoursesScreen = ({navigation, route}) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.row}>
-          <TouchableOpacity onPress={navigation.goBack}>
+          {/* <TouchableOpacity onPress={navigation.goBack}>
             <Image
               source={require('../assets/images/back-arrow-white.png')}
               style={styles.backArrow}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          <BackArrow
+            goBack={navigation.goBack}
+            inactive={route.params.inactive}
+            propsStyles={styles.backArrow}
+          />
           <Text style={styles.white}>Course List</Text>
           <TouchableOpacity onPress={() => logout(navigation)}>
             <Image
@@ -73,6 +79,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 21,
     marginTop: 4,
+    marginLeft: 4,
   },
   white: {
     fontFamily: 'Montserrat-SemiBold',

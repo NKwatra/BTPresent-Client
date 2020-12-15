@@ -12,6 +12,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {PacmanIndicator} from 'react-native-indicators';
 import {getUniversityCourses, signUp} from '../utils/Auth';
 import {setUserId, setUserCourses} from '../utils/AsyncStorage';
+import BackArrow from '../components/BackArrow';
 
 const CoursesScreen = ({navigation, route}) => {
   const [courses, updateCourses] = useState([]);
@@ -36,12 +37,10 @@ const CoursesScreen = ({navigation, route}) => {
       ) : (
         <>
           <View style={styles.header}>
-            <TouchableOpacity onPress={navigation.goBack}>
-              <Image
-                source={require('../assets/images/back-arrow-white.png')}
-                style={styles.backArrow}
-              />
-            </TouchableOpacity>
+            <BackArrow
+              goBack={navigation.goBack}
+              propsStyles={styles.backArrow}
+            />
             <Text style={styles.courseHeader}>Courses</Text>
           </View>
           <FlatList
@@ -139,6 +138,7 @@ const styles = StyleSheet.create({
     width: 26,
     height: 21,
     marginTop: 8,
+    marginLeft: 4,
     marginRight: Dimensions.get('window').width * 0.2,
   },
   header: {

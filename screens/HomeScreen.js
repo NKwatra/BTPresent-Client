@@ -45,6 +45,7 @@ const HomeScreen = ({navigation}) => {
                       params: {
                         selectedCourses: authState,
                         accountType,
+                        inactive: true,
                       },
                     },
                   ],
@@ -62,7 +63,7 @@ const HomeScreen = ({navigation}) => {
                       name: 'login',
                       params: {
                         accountType,
-                        backButton: false,
+                        inactive: true,
                       },
                     },
                   ],

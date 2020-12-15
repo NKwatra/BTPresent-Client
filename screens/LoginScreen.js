@@ -13,6 +13,7 @@ import {getRegisteredUniversityNames, login} from '../utils/Auth';
 import SearchableDropdown from '../components/SearchableDropdown';
 import {PacmanIndicator} from 'react-native-indicators';
 import BluetoothModule from '../utils/BluetoothModule';
+import {resetState} from '../utils/Common';
 
 const LoginScreen = ({route, navigation}) => {
   const accountType = route.params.accountType || 'STUDENT';
@@ -72,9 +73,18 @@ const LoginScreen = ({route, navigation}) => {
             sending in data received from server
           */
             if (result.navigate) {
-              navigation.navigate('selectedCourses', {
-                accountType,
-                selectedCourses: result.selectedCourses,
+              resetState(navigation, {
+                index: 0,
+                routes: [
+                  {
+                    name: 'selectedCourses',
+                    params: {
+                      accountType,
+                      selectedCourses: result.selectedCourses,
+                      inactive: true,
+                    },
+                  },
+                ],
               });
             } else {
               /*
@@ -98,7 +108,7 @@ const LoginScreen = ({route, navigation}) => {
         <ScrollView>
           <BackArrow
             goBack={navigation.goBack}
-            active={route.params.backButton}
+            inactive={route.params.inactive}
           />
           <Text style={styles.welcome}>Welcome Back</Text>
           <FormInput
